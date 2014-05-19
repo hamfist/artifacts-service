@@ -10,7 +10,12 @@ import (
 // Main is the top of the pile.  Start here.
 func Main() {
 	http.Handle(`/`, newRootHandler())
-	http.Handle(`/upload`, newUploadHandler())
+
+	uh, err := newUploadHandler()
+	if err != nil {
+		log.Fatalf("failed to build upload handler: %v\n", err)
+	}
+	http.Handle(`/upload`, uh)
 
 	port := os.Getenv("PORT")
 	if port == "" {
