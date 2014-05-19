@@ -1,0 +1,1 @@
+web: artifacts-service

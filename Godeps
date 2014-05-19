@@ -1,0 +1,5 @@
+{
+	"ImportPath": "github.com/meatballhat/artifacts-service",
+	"GoVersion": "go1.2",
+	"Deps": []
+}
