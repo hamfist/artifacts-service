@@ -1,5 +1,5 @@
 PACKAGE := github.com/meatballhat/artifacts-service
-SUBPACKAGES := $(PACKAGE)/server
+SUBPACKAGES := $(PACKAGE)/server $(PACKAGE)/store
 
 VERSION_VAR := main.VersionString
 REPO_VERSION := $(shell git describe --always --dirty --tags)
@@ -29,7 +29,7 @@ test-race:
 coverage.html: coverage.out
 	$(GO) tool cover -html=$^ -o $@
 
-coverage.out: server-coverage.out
+coverage.out: server-coverage.out store-coverage.out
 	$(GO) test -covermode=count -coverprofile=$@.tmp $(GOBUILD_LDFLAGS) $(PACKAGE)
 	echo 'mode: count' > $@
 	grep -h -v 'mode: count' $@.tmp >> $@
@@ -39,6 +39,9 @@ coverage.out: server-coverage.out
 
 server-coverage.out:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/server
+
+store-coverage.out:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/store
 
 .PHONY: build
 build: deps
