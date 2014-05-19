@@ -1,3 +1,4 @@
+---
 language: go
 go:
 - 1.2.2
@@ -10,3 +11,10 @@ before_install:
 - go get code.google.com/p/go.tools/cmd/cover
 - godep restore
 - go install -a -race std
+deploy:
+  provider: heroku
+  api_key:
+    secure: PiJLyvXxMZs1VrH7QM/wv4fzHFuHrrjoizqIHIO7PnSPQh+Pferkf4Om+yvBMLSQksUDyz3zZv4Ivh3uSInNXAJE0Ky/VnT8QDgjixbN7vIqo9bJIjUQ6kA8zkuHEfe7HegbnMrQcVgQQDbHgcCpMRlsXH6iVXf5W1J7CvBpA/I=
+  app: meatballhat-artifacts-service
+  on:
+    repo: meatballhat/artifacts-service
