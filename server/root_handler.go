@@ -5,24 +5,7 @@ import (
 	"net/http"
 )
 
-type rootHandler struct{}
-
-func newRootHandler() *rootHandler {
-	return &rootHandler{}
-}
-
-func (rh *rootHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		rh.handleGetRoot(w, r)
-		return
-	default:
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		fmt.Fprintf(w, "whatever, meatbag\n")
-	}
-}
-
-func (rh *rootHandler) handleGetRoot(w http.ResponseWriter, r *http.Request) {
+func rootHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "sure\n")
 }

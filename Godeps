@@ -3,6 +3,10 @@
 	"GoVersion": "go1.2",
 	"Deps": [
 		{
+			"ImportPath": "github.com/julienschmidt/httprouter",
+			"Rev": "9b1fa09c72280f35b53536e843664c0c205987c8"
+		},
+		{
 			"ImportPath": "github.com/lib/pq",
 			"Rev": "c808a1bb644594ca717ac61f71e6b0e454b835e2"
 		}
