@@ -9,9 +9,14 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// Server holds onto a router and a store
+type Server struct {
+	Router *httprouter.Router
+}
+
 // Main is the top of the pile.  Start here.
 func Main() {
-	router := buildRouter()
+	server := buildServer()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -20,13 +25,18 @@ func Main() {
 
 	addr := fmt.Sprintf(":%s", port)
 	log.Printf("artifacts-service listening on %v\n", addr)
-	log.Fatal(http.ListenAndServe(addr, router))
+	log.Fatal(http.ListenAndServe(addr, server.Router))
 }
 
-func buildRouter() *httprouter.Router {
+func buildServer() *Server {
+	server := &Server{}
 	router := httprouter.New()
-	router.GET(`/`, rootHandler)
-	router.POST(`/save`, saveHandler)
-	router.GET(`/list/:owner/:repo`, listHandler)
-	return router
+
+	router.GET(`/`, server.rootHandler)
+	router.POST(`/save`, server.saveHandler)
+	router.GET(`/list/:owner/:repo`, server.listHandler)
+
+	server.Router = router
+
+	return server
 }
