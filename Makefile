@@ -29,7 +29,7 @@ test-race:
 coverage.html: coverage.out
 	$(GO) tool cover -html=$^ -o $@
 
-coverage.out: server-coverage.out store-coverage.out
+coverage.out: server-coverage.out store-coverage.out artifact-coverage.out
 	$(GO) test -covermode=count -coverprofile=$@.tmp $(GOBUILD_LDFLAGS) $(PACKAGE)
 	echo 'mode: count' > $@
 	grep -h -v 'mode: count' $@.tmp >> $@
@@ -43,6 +43,9 @@ server-coverage.out:
 store-coverage.out:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/store
 
+artifact-coverage.out:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/artifact
+
 .PHONY: build
 build: deps
 	$(GO) install $(GOBUILD_FLAGS) $(GOBUILD_LDFLAGS) $(PACKAGE)
@@ -55,7 +58,7 @@ deps:
 .PHONY: clean
 clean:
 	rm -vf $${GOPATH%%:*}/bin/artifacts-service
-	rm -vf coverage.html coverage.out
+	rm -vf coverage.html *coverage.out
 	$(GO) clean $(PACKAGE) $(SUBPACKAGES) || true
 	if [ -d $${GOPATH%%:*}/pkg ] ; then \
 		find $${GOPATH%%:*}/pkg -name '*artifacts-service*' | xargs rm -rfv || true ; \

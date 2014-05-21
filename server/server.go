@@ -7,16 +7,22 @@ import (
 	"os"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/meatballhat/artifacts-service/store"
 )
 
 // Server holds onto a router and a store
 type Server struct {
 	Router *httprouter.Router
+	opts   *Options
+	store  store.Storer
 }
 
 // Main is the top of the pile.  Start here.
 func Main() {
-	server := buildServer()
+	server, err := NewServer(NewOptions())
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -28,15 +34,40 @@ func Main() {
 	log.Fatal(http.ListenAndServe(addr, server.Router))
 }
 
-func buildServer() *Server {
-	server := &Server{}
+// NewServer creates a new *Server with a router and its routes registered
+func NewServer(opts *Options) (*Server, error) {
+	server := &Server{opts: opts}
+	server.setupRouter()
+	err := server.setupStorer()
+	if err != nil {
+		return nil, err
+	}
+
+	return server, nil
+}
+
+func (srv *Server) setupRouter() {
 	router := httprouter.New()
 
-	router.GET(`/`, server.rootHandler)
-	router.POST(`/save`, server.saveHandler)
-	router.GET(`/list/:owner/:repo`, server.listHandler)
+	router.GET(`/`, srv.rootHandler)
+	router.POST(`/save`, srv.saveHandler)
+	router.GET(`/list/:owner/:repo`, srv.listHandler)
 
-	server.Router = router
+	srv.Router = router
+}
 
-	return server
+func (srv *Server) setupStorer() error {
+	pgstore, err := store.NewPostgreSQLStore(srv.opts.DatabaseURL)
+	if err != nil {
+		return err
+	}
+
+	s3store := store.NewS3Store()
+
+	multiStore := store.NewMultiStore()
+	multiStore.AddStorer("postgresql", pgstore)
+	multiStore.AddStorer("s3", s3store)
+
+	srv.store = multiStore
+	return nil
 }
