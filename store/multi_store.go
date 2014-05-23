@@ -3,6 +3,8 @@ package store
 import (
 	"io"
 	"sync"
+
+	"github.com/meatballhat/artifacts-service/artifact"
 )
 
 // MultiStore allows for multiple stores in one!
@@ -20,7 +22,7 @@ func NewMultiStore() *MultiStore {
 }
 
 // Store tees the in io.Reader across all Storers
-func (ms *MultiStore) Store(in io.Reader) error {
+func (ms *MultiStore) Store(a *artifact.Artifact) error {
 	ms.storerMutex.Lock()
 	defer ms.storerMutex.Unlock()
 
@@ -29,12 +31,12 @@ func (ms *MultiStore) Store(in io.Reader) error {
 		w             io.Writer
 	)
 
-	nextReader = in
+	nextReader = a.Instream
 
 	for _, storer := range ms.storers {
 		r, w = io.Pipe()
 		nextReader = io.TeeReader(nextReader, w)
-		err := storer.Store(r)
+		err := storer.Store(artifact.New(a.RepoSlug, a.Source, a.Destination, a.JobID, r, a.Size))
 		if err != nil {
 			return err
 		}

@@ -1,10 +1,10 @@
 package store
 
 import (
-	"io"
+	"github.com/meatballhat/artifacts-service/artifact"
 )
 
 // Storer defines how stuff gets stored
 type Storer interface {
-	Store(io.Reader) error
+	Store(*artifact.Artifact) error
 }

@@ -2,10 +2,11 @@ package store
 
 import (
 	"database/sql"
-	"io"
 
 	// register the pq driver
 	_ "github.com/lib/pq"
+
+	"github.com/meatballhat/artifacts-service/artifact"
 )
 
 // PostgreSQLStore is a storer specific to PostgreSQL.  Big surprise!
@@ -26,6 +27,6 @@ func NewPostgreSQLStore(url string) (*PostgreSQLStore, error) {
 }
 
 // Store saves the stuff
-func (pg *PostgreSQLStore) Store(in io.Reader) error {
+func (pg *PostgreSQLStore) Store(a *artifact.Artifact) error {
 	return nil
 }

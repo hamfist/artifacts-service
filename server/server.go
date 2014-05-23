@@ -57,17 +57,19 @@ func (srv *Server) setupRouter() {
 }
 
 func (srv *Server) setupStorer() error {
-	pgstore, err := store.NewPostgreSQLStore(srv.opts.DatabaseURL)
-	if err != nil {
-		return err
-	}
+	// TODO: make this work mkay?
+	//pgstore, err := store.NewPostgreSQLStore(srv.opts.DatabaseURL)
+	//if err != nil {
+	//return err
+	//}
 
-	s3store := store.NewS3Store()
+	// s3store := store.NewS3Store()
 
-	multiStore := store.NewMultiStore()
-	multiStore.AddStorer("postgresql", pgstore)
-	multiStore.AddStorer("s3", s3store)
+	//multiStore := store.NewMultiStore()
+	//multiStore.AddStorer("postgresql", pgstore)
+	//multiStore.AddStorer("s3", s3store)
 
-	srv.store = multiStore
+	//srv.store = multiStore
+	srv.store = store.NewFileStore(srv.opts.FileStorePrefix)
 	return nil
 }

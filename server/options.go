@@ -2,7 +2,8 @@ package server
 
 // Options contains the bits used to create a server
 type Options struct {
-	DatabaseURL string
+	DatabaseURL     string
+	FileStorePrefix string
 }
 
 // NewOptions makes new *Options wheeee

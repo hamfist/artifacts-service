@@ -4,12 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/meatballhat/artifacts-service/artifact"
 )
 
 func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-	err := srv.store.Store(r.Body)
+	repoSlug := r.Header.Get("Artifacts-Repo-Slug")
+	src := r.Header.Get("Artifacts-Source")
+	dest := r.Header.Get("Artifacts-Destination")
+	jobID := r.Header.Get("Artifacts-Job-ID")
+	size, _ := strconv.ParseUint(r.Header.Get("Artifacts-Size"), 10, 64)
+
+	// TODO: validation!
+
+	a := artifact.New(repoSlug, src, dest, jobID, r.Body, size)
+
+	err := srv.store.Store(a)
 	if err != nil {
 		serveError(err, w, r)
 		return
