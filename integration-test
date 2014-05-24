@@ -12,29 +12,34 @@ if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
 fi
 
 artifacts-service 2>&1 >> server.out &
-service_pid="$?"
+SERVICE_PID="$!"
+echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
 
-while ! curl -f http://localhost:$PORT ; do
+trap "kill \"${SERVICE_PID}\" ; true" EXIT QUIT TERM
+
+while ! curl -s -f http://localhost:$PORT >/dev/null ; do
   echo -en '.'
   sleep 0.05
 done
 
 echo
 
-trap "kill \"${service_pid}\" ; true" EXIT QUIT TERM
+TEST_OUTPUT="$RANDOM $RANDOM $RANDOM"
+echo "$TEST_OUTPUT"> testfile.out
 
-echo "$RANDOM $RANDOM $RANDOM" > testfile.out
+echo "---> Wrote test output: '$TEST_OUTPUT'"
+
 artifacts upload \
   --upload-provider artifacts \
   --save-url http://localhost:$PORT/save testfile.out
 
-uploaded_path=$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out
-uploaded_content="$(cat $uploaded_path)"
+UPLOADED_PATH=$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out
+UPLOADED_CONTENT="$(cat $UPLOADED_PATH)"
 
-if [[ "$(cat testfile.out)" != "$uploaded_content" ]] ; then
-  echo "uploaded content does not match"
+if [[ "$TEST_OUTPUT" != "$UPLOADED_CONTENT" ]] ; then
+  echo "---> ERROR: Uploaded content does not match"
   exit 1
 fi
 
-echo "looks good"
+echo "---> Looks good"
 exit 0
