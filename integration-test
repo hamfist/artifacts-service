@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -e
+
+export PATH="${GOPATH%%:*}/bin:$PATH"
+export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
+export TRAVIS_BUILD_NUMBER=${TRAVIS_BUILD_NUMBER:-0xbeef}
+export TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER:-0xbeef.1}
+
+if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
+  go get -u github.com/meatballhat/artifacts
+fi
+
+artifacts-service 2>&1 >> server.out &
+service_pid="$?"
+
+while ! curl -f http://localhost:$PORT ; do
+  echo -en '.'
+  sleep 0.05
+done
+
+echo
+
+trap "kill \"${service_pid}\" ; true" EXIT QUIT TERM
+
+echo "$RANDOM $RANDOM $RANDOM" > testfile.out
+artifacts upload \
+  --upload-provider artifacts \
+  --save-url http://localhost:$PORT/save testfile.out
+
+uploaded_path=$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out
+uploaded_content="$(cat $uploaded_path)"
+
+if [[ "$(cat testfile.out)" != "$uploaded_content" ]] ; then
+  echo "uploaded content does not match"
+  exit 1
+fi
+
+echo "looks good"
+exit 0
