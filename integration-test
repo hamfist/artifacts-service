@@ -38,8 +38,12 @@ artifacts upload \
   --save-url http://localhost:$PORT/save testfile.out
 
 set +x
+set +e
 
-UPLOADED_PATH=$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out
+echo "---> Dumping server log"
+cat server.out
+
+UPLOADED_PATH="$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
 UPLOADED_CONTENT="$(cat $UPLOADED_PATH)"
 
 if [[ "$TEST_OUTPUT" != "$UPLOADED_CONTENT" ]] ; then
