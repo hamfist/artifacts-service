@@ -12,7 +12,10 @@ if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   go get -u github.com/meatballhat/artifacts
 fi
 
-artifacts-service 2>&1 >> server.out &
+UPLOADED_PATH="$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
+rm -vf "$UPLOADED_PATH"
+
+artifacts-service 2>&1 > server.out &
 SERVICE_PID="$!"
 echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
 
@@ -42,8 +45,8 @@ set +e
 
 echo "---> Dumping server log"
 cat server.out
+echo "---> End of server log"
 
-UPLOADED_PATH="$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
 UPLOADED_CONTENT="$(cat $UPLOADED_PATH)"
 
 if [[ "$TEST_OUTPUT" != "$UPLOADED_CONTENT" ]] ; then
