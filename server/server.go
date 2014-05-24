@@ -98,6 +98,6 @@ func (srv *Server) setupStorer() error {
 	//multiStore.AddStorer("s3", s3store)
 
 	//srv.store = multiStore
-	srv.store = store.NewFileStore(srv.opts.FileStorePrefix)
+	srv.store = store.NewFileStore(srv.opts.FileStorePrefix, srv.log)
 	return nil
 }

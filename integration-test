@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+set -e
+
+export PATH="${GOPATH%%:*}/bin:$PATH"
+export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
+export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG:-owner/foo}
+export TRAVIS_BUILD_NUMBER=${TRAVIS_BUILD_NUMBER:-0xbeef}
+export TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER:-0xbeef.1}
+export ARTIFACTS_DEBUG=1
+
+if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
+  go get -u github.com/meatballhat/artifacts
+fi
+
+UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
+rm -vf "$UPLOADED_PATH"
+
+artifacts-service 2>&1 > server.out &
+SERVICE_PID="$!"
+echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
+
+trap "kill \"${SERVICE_PID}\" ; true" EXIT QUIT TERM
+
+while ! curl -s -f http://localhost:$PORT >/dev/null ; do
+  echo -en '.'
+  sleep 0.05
+done
+
+echo
+
+TEST_OUTPUT="$RANDOM $RANDOM $RANDOM"
+echo "$TEST_OUTPUT"> testfile.out
+
+echo "---> Wrote test output: '$TEST_OUTPUT'"
+
+set -x
+
+artifacts -v
+artifacts upload \
+  --upload-provider artifacts \
+  --save-url http://localhost:$PORT/save testfile.out
+
+set +x
+set +e
+
+echo "---> Dumping server log"
+cat server.out
+echo "---> End of server log"
+
+UPLOADED_CONTENT="$(cat $UPLOADED_PATH)"
+
+if [[ "$TEST_OUTPUT" != "$UPLOADED_CONTENT" ]] ; then
+  echo "---> ERROR: Uploaded content does not match"
+  exit 1
+fi
+
+echo "---> Looks good"
+exit 0
