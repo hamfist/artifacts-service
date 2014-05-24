@@ -4,6 +4,7 @@ set -e
 
 export PATH="${GOPATH%%:*}/bin:$PATH"
 export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
+export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG:-owner/foo}
 export TRAVIS_BUILD_NUMBER=${TRAVIS_BUILD_NUMBER:-0xbeef}
 export TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER:-0xbeef.1}
 export ARTIFACTS_DEBUG=1
@@ -12,7 +13,7 @@ if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   go get -u github.com/meatballhat/artifacts
 fi
 
-UPLOADED_PATH="$(dirname $0)/tmp/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
+UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
 rm -vf "$UPLOADED_PATH"
 
 artifacts-service 2>&1 > server.out &
