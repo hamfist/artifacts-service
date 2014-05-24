@@ -20,12 +20,12 @@ type Artifact struct {
 }
 
 // New creates a new *Artifact
-func New(repoSlug, src, dest, jobID string, in io.Reader, size uint64) *Artifact {
+func New(repoSlug, src, dest, jobNumber string, in io.Reader, size uint64) *Artifact {
 	return &Artifact{
 		Source:      src,
 		Destination: dest,
 		Instream:    in,
-		JobID:       jobID,
+		JobNumber:   jobNumber,
 		RepoSlug:    repoSlug,
 		Size:        size,
 	}

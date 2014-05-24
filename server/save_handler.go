@@ -13,12 +13,12 @@ func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, _ map[str
 	repoSlug := r.Header.Get("Artifacts-Repo-Slug")
 	src := r.Header.Get("Artifacts-Source")
 	dest := r.Header.Get("Artifacts-Destination")
-	jobID := r.Header.Get("Artifacts-Job-ID")
+	jobNumber := r.Header.Get("Artifacts-Job-Number")
 	size, _ := strconv.ParseUint(r.Header.Get("Artifacts-Size"), 10, 64)
 
 	// TODO: validation!
 
-	a := artifact.New(repoSlug, src, dest, jobID, r.Body, size)
+	a := artifact.New(repoSlug, src, dest, jobNumber, r.Body, size)
 
 	err := srv.store.Store(a)
 	if err != nil {

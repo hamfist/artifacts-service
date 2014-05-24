@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/meatballhat/artifacts-service/artifact"
 )
@@ -23,7 +25,7 @@ func NewFileStore(prefix string) *FileStore {
 
 // Store does the storing
 func (fs *FileStore) Store(a *artifact.Artifact) error {
-	fullPath := a.Fullpath()
+	fullPath := filepath.Join(fs.Prefix, strings.TrimPrefix(a.Fullpath(), "/"))
 	fullPathPrefix := path.Dir(fullPath)
 
 	err := os.MkdirAll(fullPathPrefix, 0755)
