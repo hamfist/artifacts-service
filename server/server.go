@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -26,7 +25,9 @@ func Main() {
 		opts.FileStorePrefix = "tmp"
 	}
 
-	server, err := NewServer(opts)
+	log := logrus.New()
+
+	server, err := NewServer(opts, log)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,13 +38,15 @@ func Main() {
 	}
 
 	addr := fmt.Sprintf(":%s", port)
-	server.LogStartup(addr)
+	log.WithFields(logrus.Fields{
+		"addr": addr,
+	}).Info("artifacts-service listening")
+
 	log.Fatal(http.ListenAndServe(addr, server.Router))
 }
 
 // NewServer creates a new *Server with a router and its routes registered
-func NewServer(opts *Options) (*Server, error) {
-	log := logrus.New()
+func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	if opts.Debug {
 		log.Level = logrus.Debug
 	}
@@ -60,12 +63,6 @@ func NewServer(opts *Options) (*Server, error) {
 	}
 
 	return server, nil
-}
-
-func (srv *Server) LogStartup(addr string) {
-	srv.log.WithFields(logrus.Fields{
-		"addr": addr,
-	}).Info("artifacts-service listening")
 }
 
 func (srv *Server) setupRouter() {
@@ -107,12 +104,8 @@ func (srv *Server) logRequest(r *http.Request) {
 
 func (srv *Server) setupStorer() error {
 	switch srv.opts.StorerType {
-	case "pg":
-		pgstore, err := store.NewPostgreSQLStore(srv.opts.DatabaseURL)
-		if err != nil {
-			return err
-		}
-		srv.store = pgstore
+	case "s3":
+		srv.store = store.NewS3Store(srv.opts.S3Key, srv.opts.S3Secret, srv.log)
 		return nil
 	case "file":
 		srv.store = store.NewFileStore(srv.opts.FileStorePrefix, srv.log)

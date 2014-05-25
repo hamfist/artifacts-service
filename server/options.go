@@ -10,6 +10,9 @@ type Options struct {
 	FileStorePrefix string
 	StorerType      string
 
+	S3Key    string
+	S3Secret string
+
 	Debug bool
 }
 
@@ -29,6 +32,9 @@ func NewOptions() *Options {
 		DatabaseURL:     dbURL,
 		FileStorePrefix: os.Getenv("ARTIFACTS_FILE_STORE_PREFIX"),
 		StorerType:      storerType,
+
+		S3Key:    os.Getenv("ARTIFACTS_KEY"),
+		S3Secret: os.Getenv("ARTIFACTS_SECRET"),
 
 		Debug: os.Getenv("ARTIFACTS_DEBUG") != "",
 	}

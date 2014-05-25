@@ -82,5 +82,5 @@ func (fs *FileStore) Store(a *artifact.Artifact) error {
 
 // Fetch returns an artifact given a repo slug and path
 func (fs *FileStore) Fetch(slug, path string) (*artifact.Artifact, error) {
-	return nil, nil
+	return artifact.New("", "", "", "", nil, uint64(0)), nil
 }
