@@ -32,6 +32,6 @@ func (pg *PostgreSQLStore) Store(a *artifact.Artifact) error {
 }
 
 // Fetch returns an artifact given a repo slug and path
-func (pg *PostgreSQLStore) Fetch(slug, path string) (*artifact.Artifact, error) {
-	return nil, nil
+func (pg *PostgreSQLStore) Fetch(slug, path, jobID string) (*artifact.Artifact, error) {
+	return nil, errNotImplemented
 }

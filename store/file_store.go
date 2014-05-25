@@ -27,9 +27,13 @@ func NewFileStore(prefix string, log *logrus.Logger) *FileStore {
 	}
 }
 
+func (fs *FileStore) artifactFullPath(a *artifact.Artifact) string {
+	return filepath.Join(fs.Prefix, strings.TrimPrefix(a.Fullpath(), "/"))
+}
+
 // Store does the storing
 func (fs *FileStore) Store(a *artifact.Artifact) error {
-	fullPath := filepath.Join(fs.Prefix, strings.TrimPrefix(a.Fullpath(), "/"))
+	fullPath := fs.artifactFullPath(a)
 	fullPathPrefix := path.Dir(fullPath)
 
 	err := os.MkdirAll(fullPathPrefix, 0755)
@@ -81,6 +85,23 @@ func (fs *FileStore) Store(a *artifact.Artifact) error {
 }
 
 // Fetch returns an artifact given a repo slug and path
-func (fs *FileStore) Fetch(slug, path string) (*artifact.Artifact, error) {
-	return artifact.New("", "", "", "", nil, uint64(0)), nil
+func (fs *FileStore) Fetch(slug, path, jobID string) (*artifact.Artifact, error) {
+	a := artifact.New(slug, path, path, jobID, nil, uint64(0))
+	fullPath := fs.artifactFullPath(a)
+
+	fi, err := os.Stat(fullPath)
+	if err != nil {
+		return nil, err
+	}
+
+	fd, err := os.Open(fullPath)
+	if err != nil {
+		return nil, err
+	}
+
+	a.Size = uint64(fi.Size())
+	a.DateModified = fi.ModTime()
+	a.Outstream = fd
+
+	return a, nil
 }

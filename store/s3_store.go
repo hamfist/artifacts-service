@@ -30,7 +30,7 @@ func (s3s *S3Store) Store(a *artifact.Artifact) error {
 }
 
 // Fetch returns an artifact given a repo slug and path
-func (s3s *S3Store) Fetch(slug, path string) (*artifact.Artifact, error) {
+func (s3s *S3Store) Fetch(slug, path, jobID string) (*artifact.Artifact, error) {
 	// TODO: fetch crap from S3, ROFL!
 	return artifact.New("", "", "", "", nil, uint64(0)), nil
 }

@@ -3,41 +3,46 @@
 set -e
 
 export PATH="${GOPATH%%:*}/bin:$PATH"
-export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
+
+if [[ ! $PORT ]] ; then
+  export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
+fi
 export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG:-owner/foo}
-export TRAVIS_BUILD_NUMBER=${TRAVIS_BUILD_NUMBER:-0xbeef}
-export TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER:-0xbeef.1}
+export TRAVIS_JOB_ID=${TRAVIS_JOB_ID:-$(date +%s | cut -b3-9)}
 export ARTIFACTS_DEBUG=1
 export ARTIFACTS_STORERTYPE="${ARTIFACTS_STORERTYPE:-$1}"
 
 if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
+  echo '---> Fetching latest artifacts client'
   go get -u github.com/meatballhat/artifacts
 fi
 
-UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG/artifacts"
-UPLOADED_PATH="$UPLOADED_PATH/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER"
+UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG"
+UPLOADED_PATH="$UPLOADED_PATH/jobs/$TRAVIS_JOB_ID"
 UPLOADED_PATH="$UPLOADED_PATH/testfile.out"
 
-rm -vf "$UPLOADED_PATH"
+rm -rvf "$(dirname $0)/tmp"
 
-artifacts-service 2>&1 > server.out &
-SERVICE_PID="$!"
-echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
+if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
+  artifacts-service 2>&1 > server.out &
+  SERVICE_PID="$!"
+  echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
 
-trap "kill \"${SERVICE_PID}\" ; true" EXIT QUIT TERM
+  trap "kill \"${SERVICE_PID}\" ; true" EXIT QUIT TERM
 
-t=0
-while ! curl -s -f http://localhost:$PORT >/dev/null ; do
-  if [[ t -ge 200 ]] ; then
-	echo '---> Enough already!'
-	exit 1
-  fi
-  echo -en '.'
-  sleep 0.05
-  let t+=1
-done
+  t=0
+  while ! curl -s -f http://localhost:$PORT >/dev/null ; do
+    if [[ t -ge 200 ]] ; then
+      echo '---> Enough already!'
+      exit 1
+    fi
+    echo -en '.'
+    sleep 0.05
+    let t+=1
+  done
 
-echo
+  echo
+fi
 
 TEST_OUTPUT="$RANDOM $RANDOM $RANDOM"
 echo "$TEST_OUTPUT"> testfile.out
@@ -49,16 +54,18 @@ set -x
 artifacts -v
 artifacts upload \
   --upload-provider artifacts \
-  --save-url http://localhost:$PORT/save testfile.out
+  --save-host http://localhost:$PORT testfile.out
 
 set +x
 set +e
 
-UPLOADED_CONTENT="$(curl -s -f "http://localhost:$PORT/$TRAVIS_REPO_SLUG/raw-artifacts/testfile.out")"
+UPLOADED_CONTENT="$(curl -s -f "http://localhost:$PORT/$TRAVIS_REPO_SLUG/jobs/$TRAVIS_JOB_ID/testfile.out")"
 
-echo "---> Dumping server log"
-cat server.out
-echo "---> End of server log"
+if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
+  echo "---> Dumping server log"
+  cat server.out
+  echo "---> End of server log"
+fi
 
 if [[ "$TEST_OUTPUT" != "$UPLOADED_CONTENT" ]] ; then
   echo "---> ERROR: Uploaded content does not match"

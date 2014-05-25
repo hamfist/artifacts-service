@@ -50,6 +50,5 @@ func (a *Artifact) Reader() (io.ReadSeeker, error) {
 
 // Fullpath returns the full destination path
 func (a *Artifact) Fullpath() string {
-	return filepath.Join(a.RepoSlug,
-		a.BuildNumber, a.JobID, a.Destination)
+	return filepath.Join(a.RepoSlug, "jobs", a.JobID, a.Destination)
 }

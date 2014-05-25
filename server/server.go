@@ -70,36 +70,54 @@ func (srv *Server) setupRouter() {
 
 	router.HandleFunc(`/`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r)
-			srv.rootHandler(w, r, mux.Vars(r))
+			srv.logRequest(r, srv.rootHandler(w, r, mux.Vars(r)))
 		}).Methods("GET")
 
-	router.HandleFunc(`/{slug:[^/]+/[^/]+}/jobs/{job_id}/{filepath:[a-zA-Z0-9_\-\/]+}`,
+	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r)
-			srv.saveHandler(w, r, mux.Vars(r))
+			srv.logRequest(r, srv.saveHandler(w, r, varsWithSlug(r)))
 		}).Methods("PUT")
 
-	router.HandleFunc(`/{slug:[^/]+/[^/]+}/jobs/{job_id}`,
+	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r)
-			srv.listHandler(w, r, mux.Vars(r))
+			srv.logRequest(r, srv.listHandler(w, r, varsWithSlug(r)))
 		}).Methods("GET")
 
-	router.HandleFunc(`/{slug:[^/]+/[^/]+}/jobs/{job_id}/{filepath:[a-zA-Z0-9_\-\/]+}`,
+	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r)
-			srv.getPathHandler(w, r, mux.Vars(r))
+			srv.logRequest(r, srv.getPathHandler(w, r, varsWithSlug(r)))
 		}).Methods("GET")
+
+	router.HandleFunc(`/{whatever:.*}`,
+		func(w http.ResponseWriter, r *http.Request) {
+			srv.logRequest(r, func() int {
+				w.WriteHeader(http.StatusNotFound)
+				fmt.Fprintf(w, "not so much\n")
+				return http.StatusNotFound
+			}())
+		})
 
 	srv.Router = router
 }
 
-func (srv *Server) logRequest(r *http.Request) {
+func varsWithSlug(r *http.Request) map[string]string {
+	vars := mux.Vars(r)
+	owner, ownerOK := vars["owner"]
+	repo, repoOK := vars["repo"]
+	if ownerOK && repoOK {
+		vars["slug"] = fmt.Sprintf("%s/%s", owner, repo)
+	}
+
+	return vars
+}
+
+func (srv *Server) logRequest(r *http.Request, status int) {
 	srv.log.WithFields(logrus.Fields{
-		"method": r.Method,
-		"path":   r.URL.Path,
-	}).Info("handling")
+		"method":  r.Method,
+		"request": r.RequestURI,
+		"status":  status,
+		"remote":  r.RemoteAddr,
+	}).Info("handled HTTP request")
 }
 
 func (srv *Server) setupStorer() error {
