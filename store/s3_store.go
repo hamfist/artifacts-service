@@ -9,14 +9,16 @@ import (
 type S3Store struct {
 	key    string
 	secret string
+	bucket string
 	log    *logrus.Logger
 }
 
 // NewS3Store initializes an *S3Store.  Wow!
-func NewS3Store(key, secret string, log *logrus.Logger) *S3Store {
+func NewS3Store(key, secret, bucket string, log *logrus.Logger) *S3Store {
 	return &S3Store{
 		key:    key,
 		secret: secret,
+		bucket: bucket,
 		log:    log,
 	}
 }

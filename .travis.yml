@@ -4,6 +4,9 @@ go:
 - 1.2.2
 - tip
 env:
+  matrix:
+  - ARTIFACTS_STORERTYPE=file
+  - ARTIFACTS_STORERTYPE=s3
   global:
   - PATH=$HOME/gopath/bin:$HOME/bin:$PATH
   - DATABASE_URL=postgres://postgres@localhost:5432/travis
@@ -18,8 +21,7 @@ before_script:
 - createdb -U postgres travis
 script:
 - make
-- ./integration-test file
-- ./integration-test pg
+- ./integration-test
 deploy:
   provider: heroku
   api_key:

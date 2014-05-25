@@ -28,12 +28,12 @@ type Artifact struct {
 }
 
 // New creates a new *Artifact
-func New(repoSlug, src, dest, jobNumber string, in io.Reader, size uint64) *Artifact {
+func New(repoSlug, src, dest, jobID string, in io.Reader, size uint64) *Artifact {
 	return &Artifact{
 		Source:       src,
 		Destination:  dest,
 		Instream:     in,
-		JobNumber:    jobNumber,
+		JobID:        jobID,
 		RepoSlug:     repoSlug,
 		Size:         size,
 		DateModified: time.Now().UTC(),
@@ -51,5 +51,5 @@ func (a *Artifact) Reader() (io.ReadSeeker, error) {
 // Fullpath returns the full destination path
 func (a *Artifact) Fullpath() string {
 	return filepath.Join(a.RepoSlug,
-		a.BuildNumber, a.JobNumber, a.Destination)
+		a.BuildNumber, a.JobID, a.Destination)
 }

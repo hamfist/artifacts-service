@@ -9,16 +9,23 @@ import (
 	"github.com/meatballhat/artifacts-service/artifact"
 )
 
-func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-	repoSlug := r.Header.Get("Artifacts-Repo-Slug")
+func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) {
+	repoSlug, repoSlugOK := vars["slug"]
+	dest, destOK := vars["dest"]
+	jobID, jobIDOK := vars["job_id"]
+
+	if !repoSlugOK || !destOK || !jobIDOK {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"error":"this will never work.  stop it"}`)
+		return
+	}
+
 	src := r.Header.Get("Artifacts-Source")
-	dest := r.Header.Get("Artifacts-Destination")
-	jobNumber := r.Header.Get("Artifacts-Job-Number")
 	size, _ := strconv.ParseUint(r.Header.Get("Artifacts-Size"), 10, 64)
 
 	// TODO: validation!
 
-	a := artifact.New(repoSlug, src, dest, jobNumber, r.Body, size)
+	a := artifact.New(repoSlug, src, dest, jobID, r.Body, size)
 
 	err := srv.store.Store(a)
 	if err != nil {
