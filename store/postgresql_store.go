@@ -30,3 +30,8 @@ func NewPostgreSQLStore(url string) (*PostgreSQLStore, error) {
 func (pg *PostgreSQLStore) Store(a *artifact.Artifact) error {
 	return nil
 }
+
+// Fetch returns an artifact given a repo slug and path
+func (pg *PostgreSQLStore) Fetch(slug, path string) (*artifact.Artifact, error) {
+	return nil, nil
+}

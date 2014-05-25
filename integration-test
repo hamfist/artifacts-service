@@ -8,12 +8,16 @@ export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG:-owner/foo}
 export TRAVIS_BUILD_NUMBER=${TRAVIS_BUILD_NUMBER:-0xbeef}
 export TRAVIS_JOB_NUMBER=${TRAVIS_JOB_NUMBER:-0xbeef.1}
 export ARTIFACTS_DEBUG=1
+export ARTIFACTS_STORER_TYPE="${ARTIFACTS_STORER_TYPE:-$1}"
 
 if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   go get -u github.com/meatballhat/artifacts
 fi
 
-UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG/artifacts/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER/testfile.out"
+UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG/artifacts"
+UPLOADED_PATH="$UPLOADED_PATH/$TRAVIS_BUILD_NUMBER/$TRAVIS_JOB_NUMBER"
+UPLOADED_PATH="$UPLOADED_PATH/testfile.out"
+
 rm -vf "$UPLOADED_PATH"
 
 artifacts-service 2>&1 > server.out &
@@ -22,9 +26,15 @@ echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
 
 trap "kill \"${SERVICE_PID}\" ; true" EXIT QUIT TERM
 
+t=0
 while ! curl -s -f http://localhost:$PORT >/dev/null ; do
+  if [[ t -ge 200 ]] ; then
+	echo '---> Enough already!'
+	exit 1
+  fi
   echo -en '.'
   sleep 0.05
+  let t+=1
 done
 
 echo
@@ -44,11 +54,11 @@ artifacts upload \
 set +x
 set +e
 
+UPLOADED_CONTENT="$(curl -s -f "http://localhost:$PORT/$TRAVIS_REPO_SLUG/raw-artifacts/testfile.out")"
+
 echo "---> Dumping server log"
 cat server.out
 echo "---> End of server log"
-
-UPLOADED_CONTENT="$(cat $UPLOADED_PATH)"
 
 if [[ "$TEST_OUTPUT" != "$UPLOADED_CONTENT" ]] ; then
   echo "---> ERROR: Uploaded content does not match"

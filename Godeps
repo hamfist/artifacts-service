@@ -12,8 +12,12 @@
 			"Rev": "3cd90eb3d932037b141d4daff9a012e1aee7e765"
 		},
 		{
-			"ImportPath": "github.com/julienschmidt/httprouter",
-			"Rev": "9b1fa09c72280f35b53536e843664c0c205987c8"
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "1f3e8a46c5bb4c29971d9867ede6e198ca5eddce"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "136d54f81f00414c45c3c68dd47e98cc97519c5e"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
