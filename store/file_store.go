@@ -31,7 +31,7 @@ func NewFileStore(prefix string, log *logrus.Logger, db *metadata.Database) *Fil
 }
 
 func (fs *FileStore) artifactFullPath(a *artifact.Artifact) string {
-	return filepath.Join(fs.Prefix, strings.TrimPrefix(a.Fullpath(), "/"))
+	return filepath.Join(fs.Prefix, strings.TrimPrefix(a.FullDestination(), "/"))
 }
 
 // Store does the storing
@@ -80,7 +80,7 @@ func (fs *FileStore) Store(a *artifact.Artifact) error {
 	fs.log.WithFields(logrus.Fields{
 		"source": a.Source,
 		"prefix": fs.Prefix,
-		"dest":   a.Fullpath(),
+		"dest":   a.FullDestination(),
 		"size":   humanize.Bytes(a.Size),
 	}).Info("stored artifact to file")
 
@@ -104,7 +104,7 @@ func (fs *FileStore) Fetch(slug, path, jobID string) (*artifact.Artifact, error)
 
 	a.Size = uint64(fi.Size())
 	a.DateModified = fi.ModTime()
-	a.Outstream = fd
+	a.OutReadSeeker = fd
 
 	return a, nil
 }

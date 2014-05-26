@@ -128,8 +128,12 @@ func (srv *Server) setupStorer() error {
 		if err != nil {
 			return err
 		}
-		srv.store = store.NewS3Store(srv.opts.S3Key,
+		store, err := store.NewS3Store(srv.opts.S3Key,
 			srv.opts.S3Secret, srv.opts.S3Bucket, srv.log, db)
+		if err != nil {
+			return err
+		}
+		srv.store = store
 		return nil
 	case "file":
 		db, err := metadata.NewDatabase(srv.opts.DatabaseURL)

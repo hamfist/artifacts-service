@@ -29,14 +29,14 @@ func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[
 
 	err := srv.store.Store(a)
 	if err != nil {
-		return serveError(err, w, r)
+		return srv.serveError(err, w, r)
 	}
 
 	resp := newSaveResponse()
 
 	jsonBytes, err := json.Marshal(resp)
 	if err != nil {
-		return serveError(err, w, r)
+		return srv.serveError(err, w, r)
 	}
 
 	w.WriteHeader(http.StatusOK)

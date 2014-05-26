@@ -5,6 +5,8 @@ import (
 	"io"
 	"path/filepath"
 	"time"
+
+	"github.com/mitchellh/goamz/s3"
 )
 
 var (
@@ -13,18 +15,23 @@ var (
 
 // Artifact contains the bits!
 type Artifact struct {
-	Branch       string
-	BuildID      string
-	BuildNumber  string
+	Branch      string
+	BuildID     string
+	BuildNumber string
+	JobID       string
+	JobNumber   string
+	RepoSlug    string
+
 	Source       string
 	Destination  string
-	Instream     io.Reader
-	Outstream    io.ReadSeeker
-	JobID        string
-	JobNumber    string
-	RepoSlug     string
 	Size         uint64
 	DateModified time.Time
+	ContentType  string
+	Perm         s3.ACL
+
+	Instream      io.Reader
+	OutReadSeeker io.ReadSeeker
+	OutReadCloser io.ReadCloser
 }
 
 // New creates a new *Artifact
@@ -40,15 +47,23 @@ func New(repoSlug, src, dest, jobID string, in io.Reader, size uint64) *Artifact
 	}
 }
 
-// Reader provides an io.Reader for the raw bytes
-func (a *Artifact) Reader() (io.ReadSeeker, error) {
-	if a.Outstream == nil {
+// ReadCloser provides an io.ReadCloser for the raw bytes
+func (a *Artifact) ReadCloser() (io.ReadCloser, error) {
+	if a.OutReadCloser == nil {
 		return nil, errNoReader
 	}
-	return a.Outstream, nil
+	return a.OutReadCloser, nil
 }
 
-// Fullpath returns the full destination path
-func (a *Artifact) Fullpath() string {
+// ReadSeeker provides an io.ReadSeeker for the raw bytes
+func (a *Artifact) ReadSeeker() (io.ReadSeeker, error) {
+	if a.OutReadSeeker == nil {
+		return nil, errNoReader
+	}
+	return a.OutReadSeeker, nil
+}
+
+// FullDestination returns the full destination path
+func (a *Artifact) FullDestination() string {
 	return filepath.Join(a.RepoSlug, "jobs", a.JobID, a.Destination)
 }

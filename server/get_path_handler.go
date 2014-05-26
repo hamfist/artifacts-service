@@ -2,6 +2,7 @@ package server
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"path"
 
@@ -22,11 +23,26 @@ func (srv *Server) getPathHandler(w http.ResponseWriter, r *http.Request, vars m
 		return http.StatusNotFound
 	}
 
-	reader, err := a.Reader()
-	if err != nil {
-		return serveError(err, w, r)
+	rs, _ := a.ReadSeeker()
+	if rs != nil {
+		http.ServeContent(w, r, path.Base(vars["filepath"]), a.DateModified, rs)
+		return http.StatusOK
 	}
 
-	http.ServeContent(w, r, path.Base(vars["filepath"]), a.DateModified, reader)
+	rc, err := a.ReadCloser()
+	if err != nil {
+		return srv.serveError(err, w, r)
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", a.Size))
+	w.Header().Set("Content-Type", a.ContentType)
+	_, err = io.Copy(w, rc)
+	if err != nil {
+		srv.log.WithFields(logrus.Fields{
+			"err": err,
+		}).Error("failed to copy all bytes")
+	}
+
 	return http.StatusOK
 }
