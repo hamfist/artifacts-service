@@ -7,6 +7,9 @@ env:
   global:
   - PATH=$HOME/gopath/bin:$HOME/bin:$PATH
   - DATABASE_URL=postgres://postgres@localhost:5432/travis
+  - secure: EvwE2RWz2AMSC0/aI0y25lDbQ/v6MwUyyn512NvEheRIIXJs55GI9V+Gyu7SlN3UiFa+GVrMK14+asZLKlDbp1plp0xfWCoOcG5wCATXTVc70IV5iWtNL6hZxML37yYrTJsijAAcnrjy2Nk2G8HjLGUoX3cMUMfD2tNudZjw4ZE=
+  - secure: bSQZG09vsFGWbF9M7bXneU2AmHxxtDs+8W8AcJJ7qoDrINsQq9FCF54oP9MBbBvGWfwNrdMNcxXW6Ye4MHc+ugIDpFPjxPrikIGszuZmcluXz2P8anSnwqWRg8PyW7l8I/YfUZ0YpgqpAEm6lA89cC0Ka1H45IUxSbKcXxy+SQA=
+  - secure: pultiIfwOKqqBpE2ZG2vL/tLT7KjIqR2WdCTCbm8O+snUf1+F23Oo16winlfhmr+76Ha8tBrwk0x0KJ4wlComGsOB8+ZDXLEyFL+52lHeUuhkP0hzbfQjlgBeo8Q6Zp5qjjZAWc2PwA0BhB/hYBWQDJaMcE1od2yxXVAwUJciGE=
 addons:
   postgresql: '9.3'
 before_install:
