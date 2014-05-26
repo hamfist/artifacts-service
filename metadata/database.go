@@ -11,7 +11,7 @@ var (
 		"20140525125633": {`
 	  CREATE TABLE IF NOT EXISTS artifacts_metadata (
 		id serial PRIMARY KEY,
-		job_number character varying(32) NOT NULL,
+		job_id character varying(32) NOT NULL,
 		size bigint NOT NULL,
 		path character varying(1024) NOT NULL,
 		content_type character varying(255) NOT NULL
@@ -23,7 +23,7 @@ var (
 	defaultStatements = map[string]string{
 		"insert_metadata": `
 		INSERT INTO artifacts_metadata (
-			job_number,
+			job_id,
 			size,
 			path,
 			content_type

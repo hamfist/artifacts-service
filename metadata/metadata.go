@@ -10,11 +10,8 @@ var (
 
 // Metadata is the stuff we care about in the metadata database
 type Metadata struct {
-	Owner       string
-	Repo        string
-	BuildID     string
-	BuildNumber string
 	JobID       string
-	JobNumber   string
+	Size        uint64
 	Path        string
+	ContentType string
 }
