@@ -124,22 +124,25 @@ func (srv *Server) logRequest(r *http.Request, status int) {
 func (srv *Server) setupStorer() error {
 	switch srv.opts.StorerType {
 	case "s3":
-		db, err := metadata.NewDatabase(srv.opts.DatabaseURL)
+		db, err := srv.getDB()
 		if err != nil {
 			return err
 		}
+
 		store, err := store.NewS3Store(srv.opts.S3Key,
 			srv.opts.S3Secret, srv.opts.S3Bucket, srv.log, db)
 		if err != nil {
 			return err
 		}
+
 		srv.store = store
 		return nil
 	case "file":
-		db, err := metadata.NewDatabase(srv.opts.DatabaseURL)
+		db, err := srv.getDB()
 		if err != nil {
 			return err
 		}
+
 		srv.store = store.NewFileStore(srv.opts.FileStorePrefix,
 			srv.log, db)
 		return nil
@@ -151,4 +154,19 @@ func (srv *Server) setupStorer() error {
 	}
 
 	return nil
+}
+
+func (srv *Server) getDB() (*metadata.Database, error) {
+	db, err := metadata.NewDatabase(srv.opts.DatabaseURL)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Init()
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
+
 }

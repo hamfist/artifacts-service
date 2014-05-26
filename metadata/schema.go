@@ -5,43 +5,15 @@ import (
 )
 
 type pgSchemaEnsurer struct {
-	db *sql.DB
+	db         *sql.DB
+	migrations map[string][]string
 }
 
-var (
-	migrations = map[string][]string{
-		"20140525125633": {`
-	  CREATE TABLE IF NOT EXISTS artifacts_metadata (
-		id serial PRIMARY KEY,
-		owner character varying(128) NOT NULL,
-		repo character varying(128) NOT NULL,
-		build_id character varying(32) NOT NULL,
-		build_number character varying(32) NOT NULL,
-		job_id character varying(32) NOT NULL,
-		job_number character varying(32) NOT NULL,
-		path character varying(32) NOT NULL
-	  );
-	  `,
-		},
+func newPGSchemaEnsurer(db *sql.DB, migrations map[string][]string) *pgSchemaEnsurer {
+	return &pgSchemaEnsurer{
+		db:         db,
+		migrations: migrations,
 	}
-
-	statements = map[string]string{
-		"insert_metadata": `
-		INSERT INTO artifacts_metadata (
-			owner,
-			repo,
-			build_id,
-			build_number,
-			job_id,
-			job_number,
-			path
-		) VALUES ($1, $2, $3, $4, $5, $6, $7)
-	`,
-	}
-)
-
-func newPGSchemaEnsurer(db *sql.DB) *pgSchemaEnsurer {
-	return &pgSchemaEnsurer{db}
 }
 
 func (pg *pgSchemaEnsurer) EnsureSchema() error {
@@ -57,7 +29,7 @@ func (pg *pgSchemaEnsurer) ensureMigrationsTable() error {
 }
 
 func (pg *pgSchemaEnsurer) runMigrations() error {
-	for schemaVersion, sqls := range migrations {
+	for schemaVersion, sqls := range pg.migrations {
 		if pg.containsMigration(schemaVersion) {
 			continue
 		}

@@ -6,11 +6,40 @@ import (
 	"github.com/lib/pq"
 )
 
+var (
+	defaultMigrations = map[string][]string{
+		"20140525125633": {`
+	  CREATE TABLE IF NOT EXISTS artifacts_metadata (
+		id serial PRIMARY KEY,
+		job_number character varying(32) NOT NULL,
+		size bigint NOT NULL,
+		path character varying(1024) NOT NULL,
+		content_type character varying(255) NOT NULL
+	  );
+	  `,
+		},
+	}
+
+	defaultStatements = map[string]string{
+		"insert_metadata": `
+		INSERT INTO artifacts_metadata (
+			job_number,
+			size,
+			path,
+			content_type
+		) VALUES ($1, $2, $3, $4)
+	`,
+	}
+)
+
 // Database holds on to metadata. Wow!
 type Database struct {
 	url  string
 	conn *sql.DB
 	st   map[string]*sql.Stmt
+
+	migrations map[string][]string
+	statements map[string]string
 }
 
 // NewDatabase creates a (postgres) *Database from a database URL string
@@ -20,6 +49,8 @@ func NewDatabase(url string) (*Database, error) {
 		st: map[string]*sql.Stmt{
 			"insert_metadata": nil,
 		},
+		migrations: defaultMigrations,
+		statements: defaultStatements,
 	}
 
 	parsedURL, err := pq.ParseURL(url)
@@ -33,12 +64,6 @@ func NewDatabase(url string) (*Database, error) {
 	}
 
 	db.conn = conn
-
-	err = db.init()
-	if err != nil {
-		return nil, err
-	}
-
 	return db, nil
 }
 
@@ -52,17 +77,18 @@ func (db *Database) Lookup(slug, jobID, path string) (*Metadata, error) {
 	return nil, errNoMetadata
 }
 
-func (db *Database) init() error {
-	err := newPGSchemaEnsurer(db.conn).EnsureSchema()
-	if err != nil {
+// Migrate runs any missing migrations for make great schema
+func (db *Database) Migrate() error {
+	return newPGSchemaEnsurer(db.conn, db.migrations).EnsureSchema()
+}
+
+// Init runs initialization stuff so that stuff works
+func (db *Database) Init() error {
+	if err := db.establishConnection(); err != nil {
 		return err
 	}
 
-	if err = db.establishConnection(); err != nil {
-		return err
-	}
-
-	if err = db.prepareStatements(); err != nil {
+	if err := db.prepareStatements(); err != nil {
 		return err
 	}
 
@@ -80,7 +106,7 @@ func (db *Database) establishConnection() error {
 }
 
 func (db *Database) prepareStatements() error {
-	for key, statementSQL := range statements {
+	for key, statementSQL := range db.statements {
 		stmt, err := db.conn.Prepare(statementSQL)
 
 		if err != nil {
