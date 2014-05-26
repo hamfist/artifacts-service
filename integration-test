@@ -34,6 +34,7 @@ if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
   while ! curl -s -f http://localhost:$PORT >/dev/null ; do
     if [[ t -ge 200 ]] ; then
       echo '---> Enough already!'
+      cat server.out || true
       exit 1
     fi
     echo -en '.'
