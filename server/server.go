@@ -7,6 +7,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/meatballhat/artifacts-service/metadata"
 	"github.com/meatballhat/artifacts-service/store"
 )
 
@@ -123,11 +124,20 @@ func (srv *Server) logRequest(r *http.Request, status int) {
 func (srv *Server) setupStorer() error {
 	switch srv.opts.StorerType {
 	case "s3":
-		srv.store = store.NewS3Store(srv.opts.S3Key, srv.opts.S3Secret,
-			srv.opts.S3Bucket, srv.log)
+		db, err := metadata.NewDatabase(srv.opts.DatabaseURL)
+		if err != nil {
+			return err
+		}
+		srv.store = store.NewS3Store(srv.opts.S3Key,
+			srv.opts.S3Secret, srv.opts.S3Bucket, srv.log, db)
 		return nil
 	case "file":
-		srv.store = store.NewFileStore(srv.opts.FileStorePrefix, srv.log)
+		db, err := metadata.NewDatabase(srv.opts.DatabaseURL)
+		if err != nil {
+			return err
+		}
+		srv.store = store.NewFileStore(srv.opts.FileStorePrefix,
+			srv.log, db)
 		return nil
 	default:
 		srv.log.WithFields(logrus.Fields{

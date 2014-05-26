@@ -11,19 +11,22 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/dustin/go-humanize"
 	"github.com/meatballhat/artifacts-service/artifact"
+	"github.com/meatballhat/artifacts-service/metadata"
 )
 
 // FileStore stores stuff as files.  Wow!
 type FileStore struct {
 	Prefix string
 	log    *logrus.Logger
+	db     *metadata.Database
 }
 
 // NewFileStore returns a *FileStore.  AMAZE.
-func NewFileStore(prefix string, log *logrus.Logger) *FileStore {
+func NewFileStore(prefix string, log *logrus.Logger, db *metadata.Database) *FileStore {
 	return &FileStore{
 		Prefix: prefix,
 		log:    log,
+		db:     db,
 	}
 }
 
