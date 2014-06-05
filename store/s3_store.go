@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/meatballhat/artifacts-service/artifact"
-	"github.com/meatballhat/artifacts-service/metadata"
+	"github.com/hamfist/artifacts-service/artifact"
+	"github.com/hamfist/artifacts-service/metadata"
 	"github.com/mitchellh/goamz/aws"
 	"github.com/mitchellh/goamz/s3"
 )

@@ -2,16 +2,21 @@ package metadata
 
 import (
 	"database/sql"
+	"github.com/Sirupsen/logrus"
 )
 
 type pgSchemaEnsurer struct {
-	db         *sql.DB
+	db  *sql.DB
+	log *logrus.Logger
+
 	migrations map[string][]string
 }
 
-func newPGSchemaEnsurer(db *sql.DB, migrations map[string][]string) *pgSchemaEnsurer {
+func newPGSchemaEnsurer(db *sql.DB, migrations map[string][]string, log *logrus.Logger) *pgSchemaEnsurer {
 	return &pgSchemaEnsurer{
-		db:         db,
+		db:  db,
+		log: log,
+
 		migrations: migrations,
 	}
 }
@@ -24,6 +29,7 @@ func (pg *pgSchemaEnsurer) EnsureSchema() error {
 }
 
 func (pg *pgSchemaEnsurer) ensureMigrationsTable() error {
+	pg.log.Info("ensuring schema_migrations table exists")
 	_, err := pg.db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (version character varying(255) NOT NULL);`)
 	return err
 }

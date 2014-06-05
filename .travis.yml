@@ -10,6 +10,7 @@ env:
   - secure: EvwE2RWz2AMSC0/aI0y25lDbQ/v6MwUyyn512NvEheRIIXJs55GI9V+Gyu7SlN3UiFa+GVrMK14+asZLKlDbp1plp0xfWCoOcG5wCATXTVc70IV5iWtNL6hZxML37yYrTJsijAAcnrjy2Nk2G8HjLGUoX3cMUMfD2tNudZjw4ZE=
   - secure: bSQZG09vsFGWbF9M7bXneU2AmHxxtDs+8W8AcJJ7qoDrINsQq9FCF54oP9MBbBvGWfwNrdMNcxXW6Ye4MHc+ugIDpFPjxPrikIGszuZmcluXz2P8anSnwqWRg8PyW7l8I/YfUZ0YpgqpAEm6lA89cC0Ka1H45IUxSbKcXxy+SQA=
   - secure: pultiIfwOKqqBpE2ZG2vL/tLT7KjIqR2WdCTCbm8O+snUf1+F23Oo16winlfhmr+76Ha8tBrwk0x0KJ4wlComGsOB8+ZDXLEyFL+52lHeUuhkP0hzbfQjlgBeo8Q6Zp5qjjZAWc2PwA0BhB/hYBWQDJaMcE1od2yxXVAwUJciGE=
+  - secure: ZZ1qY6TfMlyel3TNJQWBQgqXdddaIgTdkzmBwNNl4qzpd5o9Ro9jP1Sa5Z3g1oPVgVEgpd9v44qfg3qJIumfDIVIUHfr3gm46L4oKBFXmfMzQhxlLzjTcorfFvzf6bXrwSqYGFntLNFgTJTv0yVDKpQRh/ZtpuYnBDRoxTNxMgc=
 addons:
   postgresql: '9.3'
 before_install:
@@ -29,4 +30,4 @@ deploy:
     secure: PiJLyvXxMZs1VrH7QM/wv4fzHFuHrrjoizqIHIO7PnSPQh+Pferkf4Om+yvBMLSQksUDyz3zZv4Ivh3uSInNXAJE0Ky/VnT8QDgjixbN7vIqo9bJIjUQ6kA8zkuHEfe7HegbnMrQcVgQQDbHgcCpMRlsXH6iVXf5W1J7CvBpA/I=
   app: meatballhat-artifacts-service
   on:
-    repo: meatballhat/artifacts-service
+    repo: hamfist/artifacts-service

@@ -3,6 +3,7 @@ package metadata
 import (
 	"database/sql"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/lib/pq"
 )
 
@@ -78,8 +79,8 @@ func (db *Database) Lookup(slug, jobID, path string) (*Metadata, error) {
 }
 
 // Migrate runs any missing migrations for make great schema
-func (db *Database) Migrate() error {
-	return newPGSchemaEnsurer(db.conn, db.migrations).EnsureSchema()
+func (db *Database) Migrate(log *logrus.Logger) error {
+	return newPGSchemaEnsurer(db.conn, db.migrations, log).EnsureSchema()
 }
 
 // Init runs initialization stuff so that stuff works

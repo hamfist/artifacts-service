@@ -7,8 +7,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
-	"github.com/meatballhat/artifacts-service/metadata"
-	"github.com/meatballhat/artifacts-service/store"
+	"github.com/hamfist/artifacts-service/metadata"
+	"github.com/hamfist/artifacts-service/store"
 )
 
 // Server holds onto a router and a store
@@ -20,13 +20,11 @@ type Server struct {
 }
 
 // Main is the top of the pile.  Start here.
-func Main() {
+func Main(log *logrus.Logger) {
 	opts := NewOptions()
 	if opts.FileStorePrefix == "" {
 		opts.FileStorePrefix = "tmp"
 	}
-
-	log := logrus.New()
 
 	server, err := NewServer(opts, log)
 	if err != nil {

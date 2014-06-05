@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/meatballhat/artifacts-service/artifact"
+	"github.com/hamfist/artifacts-service/artifact"
 )
 
 func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {

@@ -3,8 +3,8 @@ package store
 import (
 	"fmt"
 
-	"github.com/meatballhat/artifacts-service/artifact"
-	"github.com/meatballhat/artifacts-service/metadata"
+	"github.com/hamfist/artifacts-service/artifact"
+	"github.com/hamfist/artifacts-service/metadata"
 )
 
 var (

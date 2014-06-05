@@ -14,7 +14,7 @@ export ARTIFACTS_STORERTYPE="${ARTIFACTS_STORERTYPE:-$1}"
 
 if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   echo '---> Fetching latest artifacts client'
-  go get -u github.com/meatballhat/artifacts
+  go get -u github.com/hamfist/artifacts
 fi
 
 UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG"

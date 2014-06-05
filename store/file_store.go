@@ -10,8 +10,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/dustin/go-humanize"
-	"github.com/meatballhat/artifacts-service/artifact"
-	"github.com/meatballhat/artifacts-service/metadata"
+	"github.com/hamfist/artifacts-service/artifact"
+	"github.com/hamfist/artifacts-service/metadata"
 )
 
 // FileStore stores stuff as files.  Wow!
