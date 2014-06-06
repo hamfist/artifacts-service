@@ -22,6 +22,7 @@ before_script:
 - createdb -U postgres travis
 script:
 - make
+- artifacts-service migrate
 - ./integration-test file
 - ./integration-test s3
 deploy:
