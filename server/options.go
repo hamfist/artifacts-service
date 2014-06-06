@@ -34,6 +34,10 @@ func NewOptions() *Options {
 	opts := &Options{
 		DatabaseURL: dbURL,
 		StorerType:  storerType,
+
+		S3Key:    os.Getenv("ARTIFACTS_KEY"),
+		S3Secret: os.Getenv("ARTIFACTS_SECRET"),
+		S3Bucket: os.Getenv("ARTIFACTS_BUCKET"),
 	}
 
 	envconfig.Process("artifacts", opts)
