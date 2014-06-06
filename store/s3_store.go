@@ -78,7 +78,7 @@ func (s3s *S3Store) Store(a *artifact.Artifact) error {
 	}
 
 	md := artifactToMetadata(a)
-	err = s3s.db.Save(md)
+	_, err = s3s.db.Save(md)
 	if err != nil {
 		return err
 	}

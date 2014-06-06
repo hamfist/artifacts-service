@@ -32,7 +32,7 @@ if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
 
   t=0
   while ! curl -s -f http://localhost:$PORT >/dev/null ; do
-    if [[ t -ge ${ARTIFACTS_SERVICE_STARTUP_LOOPS:-200} ]] ; then
+    if [[ t -ge ${ARTIFACTS_SERVICE_STARTUP_LOOPS:-10} ]] ; then
       echo '---> Enough already!'
       cat server.out || true
       exit 1
