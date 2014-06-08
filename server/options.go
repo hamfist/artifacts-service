@@ -38,6 +38,8 @@ func NewOptions() *Options {
 		S3Key:    os.Getenv("ARTIFACTS_KEY"),
 		S3Secret: os.Getenv("ARTIFACTS_SECRET"),
 		S3Bucket: os.Getenv("ARTIFACTS_BUCKET"),
+
+		Debug: os.Getenv("DEBUG") != "",
 	}
 
 	envconfig.Process("artifacts", opts)

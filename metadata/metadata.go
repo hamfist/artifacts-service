@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -14,4 +15,13 @@ type Metadata struct {
 	Size        uint64
 	Path        string
 	ContentType string
+}
+
+// MarshalJSON is all about the JSON
+func (md *Metadata) MarshalJSON() ([]byte, error) {
+	return json.Marshal(map[string]string{
+		"size":         fmt.Sprintf("%d", md.Size),
+		"path":         md.Path,
+		"content_type": md.ContentType,
+	})
 }

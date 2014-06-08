@@ -17,6 +17,7 @@ type Server struct {
 	opts   *Options
 	log    *logrus.Logger
 	store  store.Storer
+	md     *metadata.Database
 }
 
 // Main is the top of the pile.  Start here.
@@ -46,6 +47,8 @@ func Main(log *logrus.Logger) {
 
 // NewServer creates a new *Server with a router and its routes registered
 func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
+	var err error
+
 	if opts.Debug {
 		log.Level = logrus.Debug
 	}
@@ -56,7 +59,13 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	}
 
 	server.setupRouter()
-	err := server.setupStorer()
+
+	err = server.getDB()
+	if err != nil {
+		return nil, err
+	}
+
+	err = server.setupStorer()
 	if err != nil {
 		return nil, err
 	}
@@ -70,22 +79,22 @@ func (srv *Server) setupRouter() {
 	router.HandleFunc(`/`,
 		func(w http.ResponseWriter, r *http.Request) {
 			srv.logRequest(r, srv.rootHandler(w, r, mux.Vars(r)))
-		}).Methods("GET")
+		}).Methods("GET").Name("root")
 
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
 			srv.logRequest(r, srv.saveHandler(w, r, varsWithSlug(r)))
-		}).Methods("PUT")
+		}).Methods("PUT").Name("save_job_artifact")
 
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}`,
 		func(w http.ResponseWriter, r *http.Request) {
 			srv.logRequest(r, srv.listHandler(w, r, varsWithSlug(r)))
-		}).Methods("GET")
+		}).Methods("GET").Name("list_job_artifacts")
 
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
 			srv.logRequest(r, srv.getPathHandler(w, r, varsWithSlug(r)))
-		}).Methods("GET")
+		}).Methods("GET").Name("get_job_artifact")
 
 	router.HandleFunc(`/{whatever:.*}`,
 		func(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +103,7 @@ func (srv *Server) setupRouter() {
 				fmt.Fprintf(w, "not so much\n")
 				return http.StatusNotFound
 			}())
-		})
+		}).Name("static")
 
 	srv.Router = router
 }
@@ -122,13 +131,8 @@ func (srv *Server) logRequest(r *http.Request, status int) {
 func (srv *Server) setupStorer() error {
 	switch srv.opts.StorerType {
 	case "s3":
-		db, err := srv.getDB()
-		if err != nil {
-			return err
-		}
-
 		store, err := store.NewS3Store(srv.opts.S3Key,
-			srv.opts.S3Secret, srv.opts.S3Bucket, srv.log, db)
+			srv.opts.S3Secret, srv.opts.S3Bucket, srv.log, srv.md)
 		if err != nil {
 			return err
 		}
@@ -136,13 +140,8 @@ func (srv *Server) setupStorer() error {
 		srv.store = store
 		return nil
 	case "file":
-		db, err := srv.getDB()
-		if err != nil {
-			return err
-		}
-
 		srv.store = store.NewFileStore(srv.opts.FileStorePrefix,
-			srv.log, db)
+			srv.log, srv.md)
 		return nil
 	default:
 		srv.log.WithFields(logrus.Fields{
@@ -154,17 +153,17 @@ func (srv *Server) setupStorer() error {
 	return nil
 }
 
-func (srv *Server) getDB() (*metadata.Database, error) {
-	db, err := metadata.NewDatabase(srv.opts.DatabaseURL)
+func (srv *Server) getDB() error {
+	db, err := metadata.NewDatabase(srv.opts.DatabaseURL, srv.log)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	err = db.Init()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return db, nil
-
+	srv.md = db
+	return nil
 }

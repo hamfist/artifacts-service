@@ -18,5 +18,10 @@ type Storer interface {
 }
 
 func artifactToMetadata(a *artifact.Artifact) *metadata.Metadata {
-	return &metadata.Metadata{}
+	return &metadata.Metadata{
+		JobID:       a.JobID,
+		Size:        a.Size,
+		Path:        a.FullDestination(),
+		ContentType: a.ContentType,
+	}
 }

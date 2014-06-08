@@ -34,7 +34,7 @@ func main() {
 			Usage: "run database migrations",
 			Action: func(_ *cli.Context) {
 				opts := server.NewOptions()
-				db, err := metadata.NewDatabase(opts.DatabaseURL)
+				db, err := metadata.NewDatabase(opts.DatabaseURL, log)
 				if err != nil {
 					log.Fatal(err)
 				}
