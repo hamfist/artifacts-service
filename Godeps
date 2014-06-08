@@ -13,6 +13,10 @@
 			"Rev": "820deefc9031d101f085ef773425fc6ca7a5363e"
 		},
 		{
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Rev": "d41e937476d50d8c56f554aa149a6c5756baceb3"
+		},
+		{
 			"ImportPath": "github.com/dustin/go-humanize",
 			"Rev": "3cd90eb3d932037b141d4daff9a012e1aee7e765"
 		},

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
 	"github.com/hamfist/artifacts-service/metadata"
 	"github.com/hamfist/artifacts-service/store"
@@ -14,6 +15,7 @@ import (
 // Server holds onto a router and a store
 type Server struct {
 	Router *mux.Router
+	n      *negroni.Negroni
 	opts   *Options
 	log    *logrus.Logger
 	store  store.Storer
@@ -42,7 +44,7 @@ func Main(log *logrus.Logger) {
 		"addr": addr,
 	}).Info("artifacts-service listening")
 
-	log.Fatal(http.ListenAndServe(addr, server.Router))
+	server.Run(addr)
 }
 
 // NewServer creates a new *Server with a router and its routes registered
@@ -59,6 +61,7 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	}
 
 	server.setupRouter()
+	server.setupNegroni()
 
 	err = server.getDB()
 	if err != nil {
@@ -73,39 +76,43 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	return server, nil
 }
 
+// Run starts up the server on the given addr
+func (srv *Server) Run(addr string) {
+	srv.n.Run(addr)
+}
+
 func (srv *Server) setupRouter() {
 	router := mux.NewRouter()
 
 	router.HandleFunc(`/`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r, srv.rootHandler(w, r, mux.Vars(r)))
+			srv.rootHandler(w, r, mux.Vars(r))
 		}).Methods("GET").Name("root")
 
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r, srv.saveHandler(w, r, varsWithSlug(r)))
+			srv.saveHandler(w, r, varsWithSlug(r))
 		}).Methods("PUT").Name("save_job_artifact")
 
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r, srv.listHandler(w, r, varsWithSlug(r)))
+			srv.listHandler(w, r, varsWithSlug(r))
 		}).Methods("GET").Name("list_job_artifacts")
 
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r, srv.getPathHandler(w, r, varsWithSlug(r)))
+			srv.getPathHandler(w, r, varsWithSlug(r))
 		}).Methods("GET").Name("get_job_artifact")
 
-	router.HandleFunc(`/{whatever:.*}`,
-		func(w http.ResponseWriter, r *http.Request) {
-			srv.logRequest(r, func() int {
-				w.WriteHeader(http.StatusNotFound)
-				fmt.Fprintf(w, "not so much\n")
-				return http.StatusNotFound
-			}())
-		}).Name("static")
-
 	srv.Router = router
+}
+
+func (srv *Server) setupNegroni() {
+	srv.n = negroni.New()
+	srv.n.Use(negroni.NewRecovery())
+	srv.n.Use(NewLoggerMiddleware())
+	srv.n.Use(negroni.NewStatic(http.Dir("public")))
+	srv.n.UseHandler(srv.Router)
 }
 
 func varsWithSlug(r *http.Request) map[string]string {
@@ -117,15 +124,6 @@ func varsWithSlug(r *http.Request) map[string]string {
 	}
 
 	return vars
-}
-
-func (srv *Server) logRequest(r *http.Request, status int) {
-	srv.log.WithFields(logrus.Fields{
-		"method":  r.Method,
-		"request": r.RequestURI,
-		"status":  status,
-		"remote":  r.RemoteAddr,
-	}).Info("handled HTTP request")
 }
 
 func (srv *Server) setupStorer() error {
