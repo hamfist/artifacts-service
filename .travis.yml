@@ -6,18 +6,28 @@ go:
 env:
   global:
   - PATH=$HOME/gopath/bin:$HOME/bin:$PATH
+  - DATABASE_URL=postgres://postgres@localhost:5432/travis
+  - ARTIFACTS_BUCKET=meatballhat
+  - secure: EEoQ0f9AJONcb6HxvSppI2dujwcnhVKQTiHsGanTEvHaAwvHNWSL7ORoYriWTQSzLIBCz+r8n4deOsqWwGZ0JgvkuHnyEZMQqKtWrBpl83DqpNoQn/cK65LnimW3hArQqT9v68WtvUDTF7Oiavt4Y/46nl1PhqVnVBn7gp1Tq1s=
+  - secure: JrTponWNbo8M8I4+m/Kt+aPjRUXMlAf6gmbYvQnvY8QaY988KJuQ7mcPx05Qt2pXvF+YAl8VaS6eAbIu5hoFiN9ZHvW4Gf8gRkc0/mYvaKJXOKvgp3Bv72JIjhlaNqLU/w5nnuVP33Q21B6PftMaGhhDOVVKw0XkoxT24pk4UW8=
+addons:
+  postgresql: '9.3'
 before_install:
 - go get github.com/tools/godep
 - go get code.google.com/p/go.tools/cmd/cover
 - godep restore
 - go install -a -race std
+before_script:
+- createdb -U postgres travis
 script:
 - make
-- ./integration-test
+- artifacts-service migrate
+- ./integration-test file
+- ./integration-test s3
 deploy:
   provider: heroku
   api_key:
     secure: PiJLyvXxMZs1VrH7QM/wv4fzHFuHrrjoizqIHIO7PnSPQh+Pferkf4Om+yvBMLSQksUDyz3zZv4Ivh3uSInNXAJE0Ky/VnT8QDgjixbN7vIqo9bJIjUQ6kA8zkuHEfe7HegbnMrQcVgQQDbHgcCpMRlsXH6iVXf5W1J7CvBpA/I=
   app: meatballhat-artifacts-service
   on:
-    repo: meatballhat/artifacts-service
+    repo: hamfist/artifacts-service

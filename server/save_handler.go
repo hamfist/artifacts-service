@@ -6,37 +6,43 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/meatballhat/artifacts-service/artifact"
+	"github.com/hamfist/artifacts-service/artifact"
 )
 
-func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, _ map[string]string) {
-	repoSlug := r.Header.Get("Artifacts-Repo-Slug")
+func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {
+	repoSlug, repoSlugOK := vars["slug"]
+	filepath, filepathOK := vars["filepath"]
+	jobID, jobIDOK := vars["job_id"]
+
+	if !repoSlugOK || !filepathOK || !jobIDOK {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(w, `{"error":"this will never work.  stop it"}`)
+		return http.StatusBadRequest
+	}
+
 	src := r.Header.Get("Artifacts-Source")
-	dest := r.Header.Get("Artifacts-Destination")
-	jobNumber := r.Header.Get("Artifacts-Job-Number")
 	size, _ := strconv.ParseUint(r.Header.Get("Artifacts-Size"), 10, 64)
 
 	// TODO: validation!
 
-	a := artifact.New(repoSlug, src, dest, jobNumber, r.Body, size)
+	a := artifact.New(repoSlug, src, filepath, jobID, r.Body, size)
 
 	err := srv.store.Store(a)
 	if err != nil {
-		serveError(err, w, r)
-		return
+		return srv.serveError(err, w, r)
 	}
 
 	resp := newSaveResponse()
 
 	jsonBytes, err := json.Marshal(resp)
 	if err != nil {
-		serveError(err, w, r)
-		return
+		return srv.serveError(err, w, r)
 	}
 
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/vnd.api+json")
 	fmt.Fprintf(w, string(jsonBytes)+"\n")
+	return http.StatusOK
 }
 
 type saveResponse struct {

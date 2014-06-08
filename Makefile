@@ -1,4 +1,4 @@
-PACKAGE := github.com/meatballhat/artifacts-service
+PACKAGE := github.com/hamfist/artifacts-service
 SUBPACKAGES := $(PACKAGE)/server $(PACKAGE)/store
 
 VERSION_VAR := main.VersionString

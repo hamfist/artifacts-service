@@ -1,1 +1,1 @@
-web: artifacts-service
+web: artifacts-service serve

@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/meatballhat/artifacts-service",
+	"ImportPath": "github.com/hamfist/artifacts-service",
 	"GoVersion": "go1.2.2",
 	"Deps": [
 		{
@@ -8,16 +8,42 @@
 			"Rev": "13600d23259ccda5a64370722cc80c8928e565cb"
 		},
 		{
+			"ImportPath": "github.com/codegangsta/cli",
+			"Comment": "1.0.0-65-g820deef",
+			"Rev": "820deefc9031d101f085ef773425fc6ca7a5363e"
+		},
+		{
+			"ImportPath": "github.com/codegangsta/negroni",
+			"Rev": "d41e937476d50d8c56f554aa149a6c5756baceb3"
+		},
+		{
 			"ImportPath": "github.com/dustin/go-humanize",
 			"Rev": "3cd90eb3d932037b141d4daff9a012e1aee7e765"
 		},
 		{
-			"ImportPath": "github.com/julienschmidt/httprouter",
-			"Rev": "9b1fa09c72280f35b53536e843664c0c205987c8"
+			"ImportPath": "github.com/gorilla/context",
+			"Rev": "1f3e8a46c5bb4c29971d9867ede6e198ca5eddce"
+		},
+		{
+			"ImportPath": "github.com/gorilla/mux",
+			"Rev": "136d54f81f00414c45c3c68dd47e98cc97519c5e"
+		},
+		{
+			"ImportPath": "github.com/kelseyhightower/envconfig",
+			"Comment": "v1.0.0",
+			"Rev": "0280e33525f5d88edb71638a80b31724153225ba"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
 			"Rev": "c808a1bb644594ca717ac61f71e6b0e454b835e2"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/goamz/aws",
+			"Rev": "c64767727bc901aecdc6466ed60ca5055e1dce94"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/goamz/s3",
+			"Rev": "c64767727bc901aecdc6466ed60ca5055e1dce94"
 		}
 	]
 }

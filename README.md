@@ -1,4 +1,4 @@
 artifacts-service
 =================
 
-The server side, mannn.  See also: https://github.com/meatballhat/artifacts
+The server side, mannn.  See also: https://github.com/hamfist/artifacts
