@@ -7,6 +7,8 @@ export PATH="${GOPATH%%:*}/bin:$PATH"
 if [[ ! $PORT ]] ; then
   export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
 fi
+ARTIFACTS_HOST=${ARTIFACTS_HOST:-localhost}
+
 export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG:-owner/foo}
 export TRAVIS_JOB_ID=${TRAVIS_JOB_ID:-$(date +%s | cut -b3-9)}
 export ARTIFACTS_DEBUG=1
@@ -31,7 +33,7 @@ if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
   trap "kill \"${SERVICE_PID}\" ; true" EXIT QUIT TERM
 
   t=0
-  while ! curl -s -f http://localhost:$PORT >/dev/null ; do
+  while ! curl -s -f $ARTIFACTS_HOST:$PORT >/dev/null ; do
     if [[ t -ge ${ARTIFACTS_SERVICE_STARTUP_LOOPS:-10} ]] ; then
       echo '---> Enough already!'
       cat server.out || true
@@ -55,12 +57,12 @@ set -x
 artifacts -v
 artifacts upload \
   --upload-provider artifacts \
-  --save-host http://localhost:$PORT testfile.out
+  --save-host http://$ARTIFACTS_HOST:$PORT testfile.out
 
 set +x
 set +e
 
-UPLOADED_CONTENT="$(curl -s -f "http://localhost:$PORT/$TRAVIS_REPO_SLUG/jobs/$TRAVIS_JOB_ID/testfile.out")"
+UPLOADED_CONTENT="$(curl -s -f "http://$ARTIFACTS_HOST:$PORT/$TRAVIS_REPO_SLUG/jobs/$TRAVIS_JOB_ID/testfile.out")"
 
 if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
   echo "---> Dumping server log"
