@@ -36,6 +36,7 @@ var (
 		SelectMetadata: &dbStatement{
 			SQL: `
 			SELECT
+				id,
 				job_id,
 				size,
 				path,
@@ -47,6 +48,7 @@ var (
 		SelectAllMetadataForJobID: &dbStatement{
 			SQL: `
 			SELECT
+				id,
 				job_id,
 				size,
 				path,
@@ -141,7 +143,7 @@ func (db *Database) Lookup(jobID, path string) (*Metadata, error) {
 
 	md := &Metadata{}
 
-	err := statement.QueryRow(jobID, path).Scan(&md.JobID, &md.Size, &md.Path, &md.ContentType)
+	err := statement.QueryRow(jobID, path).Scan(&md.ID, &md.JobID, &md.Size, &md.Path, &md.ContentType)
 	if err != nil {
 		return nil, errNoMetadata
 	}
@@ -164,7 +166,7 @@ func (db *Database) LookupAll(jobID string) ([]*Metadata, error) {
 
 	for rows.Next() {
 		md := &Metadata{}
-		err = rows.Scan(&md.JobID, &md.Size, &md.Path, &md.ContentType)
+		err = rows.Scan(&md.ID, &md.JobID, &md.Size, &md.Path, &md.ContentType)
 		if err != nil {
 			return nil, err
 		}
