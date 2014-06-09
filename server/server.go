@@ -84,11 +84,6 @@ func (srv *Server) Run(addr string) {
 func (srv *Server) setupRouter() {
 	router := mux.NewRouter()
 
-	router.HandleFunc(`/`,
-		func(w http.ResponseWriter, r *http.Request) {
-			srv.rootHandler(w, r, mux.Vars(r))
-		}).Methods("GET").Name("root")
-
 	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
 		func(w http.ResponseWriter, r *http.Request) {
 			srv.saveHandler(w, r, varsWithSlug(r))
