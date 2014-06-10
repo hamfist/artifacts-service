@@ -26,6 +26,7 @@ script:
 - ./integration-test s3
 deploy:
   provider: heroku
+  buildpack: https://github.com/kr/heroku-buildpack-go.git
   api_key:
     secure: J2aEVgqBIdusX0Q2XmEI9lE/lcGdeHZluEdXJfenKD5fO4DTfWNvOT0yv0n3UyPsBiVbcluzvJHCZuEie0bIHWlIxaZ4hGVp+fitl5n47OhG6mexOXAJECxRero6STUca1NrNjEobVa0HkyNZaMyVcQpi9/nad1BIcZww5kX8ck=
   app: meatballhat-artifacts-service
