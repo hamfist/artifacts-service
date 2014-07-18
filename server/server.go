@@ -8,18 +8,22 @@ import (
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/negroni"
 	"github.com/gorilla/mux"
+	"github.com/hamfist/artifacts-service/auth"
 	"github.com/hamfist/artifacts-service/metadata"
 	"github.com/hamfist/artifacts-service/store"
 )
 
 // Server holds onto a router and a store
 type Server struct {
-	Router *mux.Router
-	n      *negroni.Negroni
-	opts   *Options
-	log    *logrus.Logger
-	store  store.Storer
-	md     *metadata.Database
+	Router    *mux.Router
+	AuthToken string
+
+	n     *negroni.Negroni
+	opts  *Options
+	log   *logrus.Logger
+	store store.Storer
+	auth  auth.Auther
+	md    *metadata.Database
 }
 
 // Main is the top of the pile.  Start here.
@@ -69,6 +73,11 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	}
 
 	err = server.setupStorer()
+	if err != nil {
+		return nil, err
+	}
+
+	err = server.setupAuther()
 	if err != nil {
 		return nil, err
 	}
@@ -143,6 +152,11 @@ func (srv *Server) setupStorer() error {
 		return fmt.Errorf("unknown storer type %q", srv.opts.StorerType)
 	}
 
+	return nil
+}
+
+func (srv *Server) setupAuther() error {
+	srv.auth = &auth.TokenAuther{Token: srv.AuthToken}
 	return nil
 }
 
