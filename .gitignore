@@ -21,6 +21,7 @@ _testmain.go
 
 *.exe
 *.test
+/gin-bin
 
 *coverage.*
 *.out

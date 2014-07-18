@@ -30,6 +30,10 @@ type listMetadataResponseLinksDataPath struct {
 }
 
 func (srv *Server) listHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {
+	if !srv.canRead(r, vars) {
+		return srv.serveUnauthorized(w, r)
+	}
+
 	allMetadata, err := srv.md.LookupAll(vars["job_id"])
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

@@ -10,6 +10,10 @@ import (
 )
 
 func (srv *Server) getPathHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {
+	if !srv.canRead(r, vars) {
+		return srv.serveUnauthorized(w, r)
+	}
+
 	srv.log.WithFields(logrus.Fields{
 		"slug":     vars["slug"],
 		"filepath": vars["filepath"],

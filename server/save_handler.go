@@ -10,6 +10,10 @@ import (
 )
 
 func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {
+	if !srv.canWrite(r, vars) {
+		return srv.serveUnauthorized(w, r)
+	}
+
 	repoSlug, repoSlugOK := vars["slug"]
 	filepath, filepathOK := vars["filepath"]
 	jobID, jobIDOK := vars["job_id"]

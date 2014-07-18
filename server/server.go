@@ -160,3 +160,11 @@ func (srv *Server) getDB() error {
 	srv.md = db
 	return nil
 }
+
+func (srv *Server) canWrite(r *http.Request, vars map[string]string) bool {
+	return true
+}
+
+func (srv *Server) canRead(r *http.Request, vars map[string]string) bool {
+	return true
+}
