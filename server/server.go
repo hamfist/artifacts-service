@@ -52,7 +52,7 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	var err error
 
 	if opts.Debug {
-		log.Level = logrus.Debug
+		log.Level = logrus.DebugLevel
 	}
 
 	server := &Server{
