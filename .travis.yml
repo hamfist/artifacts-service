@@ -7,8 +7,6 @@ env:
   - PATH=$HOME/gopath/bin:$HOME/bin:$PATH
   - DATABASE_URL=postgres://postgres@localhost:5432/travis
   - ARTIFACTS_BUCKET=meatballhat
-  - secure: EEoQ0f9AJONcb6HxvSppI2dujwcnhVKQTiHsGanTEvHaAwvHNWSL7ORoYriWTQSzLIBCz+r8n4deOsqWwGZ0JgvkuHnyEZMQqKtWrBpl83DqpNoQn/cK65LnimW3hArQqT9v68WtvUDTF7Oiavt4Y/46nl1PhqVnVBn7gp1Tq1s=
-  - secure: JrTponWNbo8M8I4+m/Kt+aPjRUXMlAf6gmbYvQnvY8QaY988KJuQ7mcPx05Qt2pXvF+YAl8VaS6eAbIu5hoFiN9ZHvW4Gf8gRkc0/mYvaKJXOKvgp3Bv72JIjhlaNqLU/w5nnuVP33Q21B6PftMaGhhDOVVKw0XkoxT24pk4UW8=
 addons:
   postgresql: '9.3'
 before_install:
