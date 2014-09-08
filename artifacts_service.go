@@ -33,11 +33,19 @@ func main() {
 			Name:  "migrate",
 			Usage: "run database migrations",
 			Action: func(_ *cli.Context) {
+				log.Debug("getting new server options")
 				opts := server.NewOptions()
+
+				log.WithFields(logrus.Fields{
+					"opts": opts,
+				}).Debug("spinning up database")
+
 				db, err := metadata.NewDatabase(opts.DatabaseURL, log)
 				if err != nil {
 					log.Fatal(err)
 				}
+
+				log.Debug("migrating")
 
 				err = db.Migrate(log)
 				if err != nil {
