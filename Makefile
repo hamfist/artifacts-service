@@ -43,6 +43,12 @@ server-coverage.out:
 store-coverage.out:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/store
 
+metadata-coverage.out:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/metadata
+
+metadata-coverage.out:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/metadata
+
 artifact-coverage.out:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/artifact
 

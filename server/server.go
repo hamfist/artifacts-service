@@ -176,7 +176,6 @@ func (srv *Server) setupAuther() error {
 	case "travis":
 		srv.auth = &auth.TravisAuther{
 			TravisAPI: srv.opts.TravisAPIServer,
-			AuthToken: srv.opts.AuthToken,
 		}
 		return nil
 	case "null":
