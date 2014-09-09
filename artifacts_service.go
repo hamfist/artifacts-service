@@ -38,9 +38,7 @@ func main() {
 					log.Level = logrus.DebugLevel
 				}
 
-				log.WithFields(logrus.Fields{
-					"opts": opts,
-				}).Debug("spinning up database")
+				log.Debug("spinning up database")
 
 				db, err := metadata.NewDatabase(opts.DatabaseURL, log)
 				if err != nil {

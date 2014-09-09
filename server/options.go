@@ -66,3 +66,7 @@ func NewOptions() *Options {
 	envconfig.Process("artifacts", opts)
 	return opts
 }
+
+func (o *Options) String() string {
+	return "&server.Options{[secrets]}"
+}

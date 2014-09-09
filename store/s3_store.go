@@ -126,3 +126,7 @@ func (s3s *S3Store) Fetch(path, jobID string) (*artifact.Artifact, error) {
 
 	return a, nil
 }
+
+func (s3s *S3Store) String() string {
+	return "&store.S3Store{[secrets]}"
+}
