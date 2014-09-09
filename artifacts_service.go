@@ -18,7 +18,6 @@ func main() {
 	log := logrus.New()
 	app := cli.NewApp()
 	app.Name = "artifacts-service"
-	app.Usage = "CRUD FUN"
 	app.Version = VersionString
 	app.Commands = []cli.Command{
 		{
@@ -30,11 +29,14 @@ func main() {
 			},
 		},
 		{
-			Name:  "migrate",
-			Usage: "run database migrations",
+			Name:      "migrate",
+			ShortName: "m",
+			Usage:     "run database migrations",
 			Action: func(_ *cli.Context) {
-				log.Debug("getting new server options")
 				opts := server.NewOptions()
+				if opts.Debug {
+					log.Level = logrus.DebugLevel
+				}
 
 				log.WithFields(logrus.Fields{
 					"opts": opts,

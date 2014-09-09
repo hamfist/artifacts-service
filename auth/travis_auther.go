@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"crypto/rsa"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,8 +11,8 @@ var (
 )
 
 type TravisAuther struct {
-	TravisAPI  string
-	PrivateKey *rsa.PrivateKey
+	TravisAPI string
+	AuthToken string
 }
 
 func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *AuthResult {

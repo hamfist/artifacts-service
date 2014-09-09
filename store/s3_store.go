@@ -26,15 +26,26 @@ type S3Store struct {
 }
 
 // NewS3Store initializes an *S3Store.  Wow!
-func NewS3Store(key, secret, bucket string,
+func NewS3Store(key, secret, bucket, regionName string,
 	log *logrus.Logger, db *metadata.Database) (*S3Store, error) {
 
+	log.Debug("getting aws auth")
 	auth, err := aws.GetAuth(key, secret)
 	if err != nil {
+		log.WithField("err", err).Error("failed to get auth")
 		return nil, err
 	}
 
-	s3Conn := s3.New(auth, aws.USEast)
+	region, ok := aws.Regions[regionName]
+	if !ok {
+		log.WithFields(logrus.Fields{
+			"region": regionName,
+		}).Warn(fmt.Sprintf("nonexistent region, falling back to %s", aws.USEast.Name))
+		region = aws.USEast
+	}
+
+	log.Debug("getting new s3 connection")
+	s3Conn := s3.New(auth, region)
 	b := s3Conn.Bucket(bucket)
 
 	if b == nil || b.Name == "" {

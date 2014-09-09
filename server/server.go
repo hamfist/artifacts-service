@@ -13,10 +13,14 @@ import (
 	"github.com/hamfist/artifacts-service/store"
 )
 
+var (
+	missingS3KeyError    = fmt.Errorf("missing s3 key")
+	missingS3SecretError = fmt.Errorf("missing s3 secret")
+)
+
 // Server holds onto a router and a store
 type Server struct {
-	Router    *mux.Router
-	AuthToken string
+	Router *mux.Router
 
 	n     *negroni.Negroni
 	opts  *Options
@@ -29,6 +33,10 @@ type Server struct {
 // Main is the top of the pile.  Start here.
 func Main(log *logrus.Logger) {
 	opts := NewOptions()
+	if opts.Debug {
+		log.Level = logrus.DebugLevel
+	}
+
 	if opts.FileStorePrefix == "" {
 		opts.FileStorePrefix = "tmp"
 	}
@@ -55,10 +63,7 @@ func Main(log *logrus.Logger) {
 func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	var err error
 
-	if opts.Debug {
-		log.Level = logrus.DebugLevel
-	}
-
+	log.Debug("creating new server")
 	server := &Server{
 		opts: opts,
 		log:  log,
@@ -91,27 +96,33 @@ func (srv *Server) Run(addr string) {
 }
 
 func (srv *Server) setupRouter() {
+	srv.log.Debug("setting up router")
 	router := mux.NewRouter()
 
 	router.HandleFunc(`/job/{job_id}/{filepath:.+}`,
-		func(w http.ResponseWriter, r *http.Request) {
-			srv.saveHandler(w, r, mux.Vars(r))
-		}).Methods("PUT").Name("save_job_artifact")
-
+		muxVarsWrapper(srv.saveHandler)).Methods("PUT").Name("save_job_artifact")
 	router.HandleFunc(`/job/{job_id}`,
-		func(w http.ResponseWriter, r *http.Request) {
-			srv.listHandler(w, r, mux.Vars(r))
-		}).Methods("GET").Name("list_job_artifacts")
-
+		muxVarsWrapper(srv.listHandler)).Methods("GET").Name("list_job_artifacts")
 	router.HandleFunc(`/job/{job_id}/{filepath:.+}`,
-		func(w http.ResponseWriter, r *http.Request) {
-			srv.getPathHandler(w, r, mux.Vars(r))
-		}).Methods("GET").Name("get_job_artifact")
+		muxVarsWrapper(srv.getPathHandler)).Methods("GET").Name("get_job_artifact")
+	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
+		muxVarsWrapper(srv.saveHandler)).Methods("PUT").Name("legacy_save_job_artifact")
+	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}`,
+		muxVarsWrapper(srv.listHandler)).Methods("GET").Name("legacy_list_job_artifacts")
+	router.HandleFunc(`/{owner}/{repo}/jobs/{job_id}/{filepath:.+}`,
+		muxVarsWrapper(srv.getPathHandler)).Methods("GET").Name("legacy_get_job_artifact")
 
 	srv.Router = router
 }
 
+func muxVarsWrapper(f func(http.ResponseWriter, *http.Request, map[string]string) int) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		f(w, r, mux.Vars(r))
+	}
+}
+
 func (srv *Server) setupNegroni() {
+	srv.log.Debug("setting up negroni")
 	srv.n = negroni.New()
 	srv.n.Use(negroni.NewRecovery())
 	srv.n.Use(NewLoggerMiddleware())
@@ -120,19 +131,29 @@ func (srv *Server) setupNegroni() {
 }
 
 func (srv *Server) setupStorer() error {
+	srv.log.WithField("storer_type", srv.opts.StorerType).Debug("setting up storer")
 	switch srv.opts.StorerType {
 	case "s3":
+		if srv.opts.S3Key == "" {
+			return missingS3KeyError
+		}
+		if srv.opts.S3Secret == "" {
+			return missingS3SecretError
+		}
 		store, err := store.NewS3Store(srv.opts.S3Key,
-			srv.opts.S3Secret, srv.opts.S3Bucket, srv.log, srv.md)
+			srv.opts.S3Secret, srv.opts.S3Bucket, srv.opts.S3Region, srv.log, srv.md)
 		if err != nil {
+			srv.log.WithField("err", err).Debug("error setting up s3 store")
 			return err
 		}
 
+		srv.log.WithField("store", store).Debug("assigning s3 store")
 		srv.store = store
 		return nil
 	case "file":
 		srv.store = store.NewFileStore(srv.opts.FileStorePrefix,
 			srv.log, srv.md)
+		srv.log.WithField("store", srv.store).Debug("assigning file store")
 		return nil
 	default:
 		srv.log.WithFields(logrus.Fields{
@@ -141,15 +162,38 @@ func (srv *Server) setupStorer() error {
 		return fmt.Errorf("unknown storer type %q", srv.opts.StorerType)
 	}
 
-	return nil
+	panic("fell through to a bad place ¯\\_(ツ)_/¯")
 }
 
 func (srv *Server) setupAuther() error {
-	srv.auth = &auth.TokenAuther{Token: srv.AuthToken}
-	return nil
+	srv.log.WithField("auther_type", srv.opts.AutherType).Debug("setting up auther")
+	switch srv.opts.AutherType {
+	case "token":
+		srv.auth = &auth.TokenAuther{
+			AuthToken: srv.opts.AuthToken,
+		}
+		return nil
+	case "travis":
+		srv.auth = &auth.TravisAuther{
+			TravisAPI: srv.opts.TravisAPIServer,
+			AuthToken: srv.opts.AuthToken,
+		}
+		return nil
+	case "null":
+		srv.auth = &auth.NullAuther{}
+		return nil
+	default:
+		srv.log.WithFields(logrus.Fields{
+			"auther_type": srv.opts.AutherType,
+		}).Error("unknown auther type")
+		return fmt.Errorf("unknown auther type %q", srv.opts.AutherType)
+	}
+
+	panic("fell through to a bad place ¯\\_(ツ)_/¯")
 }
 
 func (srv *Server) getDB() error {
+	srv.log.Debug("getting database handle")
 	db, err := metadata.NewDatabase(srv.opts.DatabaseURL, srv.log)
 	if err != nil {
 		return err
@@ -165,9 +209,9 @@ func (srv *Server) getDB() error {
 }
 
 func (srv *Server) canWrite(r *http.Request, vars map[string]string) bool {
-	return true
+	return srv.auth.Check(r, vars).CanWrite
 }
 
 func (srv *Server) canRead(r *http.Request, vars map[string]string) bool {
-	return true
+	return srv.auth.Check(r, vars).CanRead
 }

@@ -13,10 +13,11 @@ export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG:-owner/foo}
 export TRAVIS_JOB_ID=${TRAVIS_JOB_ID:-$(date +%s | cut -b3-9)}
 export ARTIFACTS_DEBUG=1
 export ARTIFACTS_STORERTYPE="${ARTIFACTS_STORERTYPE:-$1}"
+export ARTIFACTS_AUTHERTYPE="${ARTIFACTS_AUTHERTYPE:-null}"
 
 if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   echo '---> Fetching latest artifacts client'
-  go get -u github.com/travis-ci/artifacts
+  curl -sL https://raw.githubusercontent.com/travis-ci/artifacts/master/install | bash
 fi
 
 UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG"
@@ -26,7 +27,7 @@ UPLOADED_PATH="$UPLOADED_PATH/testfile.out"
 rm -rvf "$(dirname $0)/tmp"
 
 if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
-  artifacts-service serve 2>&1 > server.out &
+  artifacts-service serve > server.out 2>&1 &
   SERVICE_PID="$!"
   echo "---> Started artifacts-service   PORT=$PORT PID=$SERVICE_PID"
 
@@ -35,6 +36,7 @@ if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
   t=0
   while ! curl -s -f $ARTIFACTS_HOST:$PORT >/dev/null ; do
     if [[ t -ge ${ARTIFACTS_SERVICE_STARTUP_LOOPS:-10} ]] ; then
+    echo
       echo '---> Enough already!'
       cat server.out || true
       exit 1
