@@ -87,9 +87,9 @@ func (fs *FileStore) Store(a *artifact.Artifact) error {
 	return nil
 }
 
-// Fetch returns an artifact given a repo slug and path
-func (fs *FileStore) Fetch(slug, path, jobID string) (*artifact.Artifact, error) {
-	a := artifact.New(slug, path, path, jobID, nil, uint64(0))
+// Fetch returns an artifact given a path and job id
+func (fs *FileStore) Fetch(path, jobID string) (*artifact.Artifact, error) {
+	a := artifact.New(path, path, jobID, nil, uint64(0))
 	fullPath := fs.artifactFullPath(a)
 
 	fi, err := os.Stat(fullPath)

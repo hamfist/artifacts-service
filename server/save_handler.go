@@ -14,11 +14,10 @@ func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[
 		return srv.serveUnauthorized(w, r)
 	}
 
-	repoSlug, repoSlugOK := vars["slug"]
 	filepath, filepathOK := vars["filepath"]
 	jobID, jobIDOK := vars["job_id"]
 
-	if !repoSlugOK || !filepathOK || !jobIDOK {
+	if !filepathOK || !jobIDOK {
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintf(w, `{"error":"this will never work.  stop it"}`)
 		return http.StatusBadRequest
@@ -29,7 +28,7 @@ func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[
 
 	// TODO: validation!
 
-	a := artifact.New(repoSlug, src, filepath, jobID, r.Body, size)
+	a := artifact.New(src, filepath, jobID, r.Body, size)
 
 	err := srv.store.Store(a)
 	if err != nil {

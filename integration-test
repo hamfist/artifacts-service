@@ -16,7 +16,7 @@ export ARTIFACTS_STORERTYPE="${ARTIFACTS_STORERTYPE:-$1}"
 
 if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   echo '---> Fetching latest artifacts client'
-  go get -u github.com/hamfist/artifacts
+  go get -u github.com/travis-ci/artifacts
 fi
 
 UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG"
@@ -62,7 +62,7 @@ artifacts upload \
 set +x
 set +e
 
-UPLOADED_CONTENT="$(curl -s -f "http://$ARTIFACTS_HOST:$PORT/$TRAVIS_REPO_SLUG/jobs/$TRAVIS_JOB_ID/testfile.out")"
+UPLOADED_CONTENT="$(curl -s -f "http://$ARTIFACTS_HOST:$PORT/job/$TRAVIS_JOB_ID/testfile.out")"
 
 if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
   echo "---> Dumping server log"

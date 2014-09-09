@@ -85,9 +85,9 @@ func (s3s *S3Store) Store(a *artifact.Artifact) error {
 	return nil
 }
 
-// Fetch returns an artifact given a repo slug and path
-func (s3s *S3Store) Fetch(slug, path, jobID string) (*artifact.Artifact, error) {
-	a := artifact.New(slug, "", path, jobID, nil, uint64(0))
+// Fetch returns an artifact given a path and job id
+func (s3s *S3Store) Fetch(path, jobID string) (*artifact.Artifact, error) {
+	a := artifact.New("", path, jobID, nil, uint64(0))
 
 	s3Key, err := s3s.b.GetKey(a.FullDestination())
 	if err != nil {

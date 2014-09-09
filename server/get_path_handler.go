@@ -15,12 +15,11 @@ func (srv *Server) getPathHandler(w http.ResponseWriter, r *http.Request, vars m
 	}
 
 	srv.log.WithFields(logrus.Fields{
-		"slug":     vars["slug"],
 		"filepath": vars["filepath"],
 		"job_id":   vars["job_id"],
 	}).Debug("serving path")
 
-	a, err := srv.store.Fetch(vars["slug"], vars["filepath"], vars["job_id"])
+	a, err := srv.store.Fetch(vars["filepath"], vars["job_id"])
 	if err != nil || a == nil {
 		w.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(w, "no such thing\n")

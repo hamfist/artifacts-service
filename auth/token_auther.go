@@ -11,13 +11,10 @@ type TokenAuther struct {
 
 // Check checks the token mkay
 func (ta *TokenAuther) Check(r *http.Request, vars map[string]string) *AuthResult {
-	ar := &AuthResult{
-		Errors:   []error{},
-		UserID:   r.Header.Get("Artifacts-User"),
-		Resource: vars["slug"],
-	}
+	ar := NewAuthResult(r, vars)
 
-	if r.Header.Get("Authorization") == ("token " + ta.Token) {
+	if r.Header.Get("Authorization") == ("token "+ta.Token) ||
+		r.Header.Get("Authorization") == ("token="+ta.Token) {
 		ar.CanRead = true
 		ar.CanWrite = true
 	}
