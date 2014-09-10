@@ -5,7 +5,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	"github.com/hamfist/artifacts-service/metadata"
 	"github.com/hamfist/artifacts-service/server"
 )
 
@@ -33,26 +32,7 @@ func main() {
 			ShortName: "m",
 			Usage:     "run database migrations",
 			Action: func(_ *cli.Context) {
-				opts := server.NewOptions()
-				if opts.Debug {
-					log.Level = logrus.DebugLevel
-				}
-
-				log.Debug("spinning up database")
-
-				db, err := metadata.NewDatabase(opts.DatabaseURL, log)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				log.Debug("migrating")
-
-				err = db.Migrate(log)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				log.Info("database migration complete")
+				server.MigratorMain(log)
 			},
 		},
 	}
