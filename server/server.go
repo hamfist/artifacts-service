@@ -27,7 +27,7 @@ type Server struct {
 	log   *logrus.Logger
 	store store.Storer
 	auth  auth.Auther
-	md    *metadata.Database
+	md    metadata.LookupSaver
 }
 
 // Main is the top of the pile.  Start here.
@@ -41,7 +41,7 @@ func Main(log *logrus.Logger) {
 		opts.FileStorePrefix = "tmp"
 	}
 
-	server, err := NewServer(opts, log)
+	server, err := NewServer(opts, log, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func Main(log *logrus.Logger) {
 }
 
 // NewServer creates a new *Server with a router and its routes registered
-func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
+func NewServer(opts *Options, log *logrus.Logger, md metadata.LookupSaver) (*Server, error) {
 	var err error
 
 	log.Debug("creating new server")
@@ -72,7 +72,7 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	srv.setupRouter()
 	srv.setupNegroni()
 
-	err = srv.getDB()
+	err = srv.getMd(md)
 	if err != nil {
 		return nil, err
 	}
@@ -188,19 +188,25 @@ func (srv *Server) setupAuther() error {
 	panic("fell through to a bad place ¯\\_(ツ)_/¯")
 }
 
-func (srv *Server) getDB() error {
+func (srv *Server) getMd(md metadata.LookupSaver) error {
 	srv.log.Debug("getting database handle")
-	db, err := metadata.NewDatabase(srv.opts.DatabaseURL, srv.log)
-	if err != nil {
-		return err
+
+	if md == nil {
+		mddb, err := metadata.NewDatabase(srv.opts.DatabaseURL, srv.log)
+
+		if err != nil {
+			return err
+		}
+
+		err = mddb.Init()
+		if err != nil {
+			return err
+		}
+
+		md = mddb
 	}
 
-	err = db.Init()
-	if err != nil {
-		return err
-	}
-
-	srv.md = db
+	srv.md = md
 	return nil
 }
 

@@ -12,6 +12,10 @@ var (
 	dbURL = os.Getenv("DATABASE_URL")
 )
 
+type testSaver struct {
+	mds map[string]*metadata.Metadata
+}
+
 func init() {
 	os.Clearenv()
 	os.Setenv("DATABASE_URL", dbURL)
@@ -23,15 +27,6 @@ func getPanicLogger() *logrus.Logger {
 		log.Level = logrus.DebugLevel
 	}
 	return log
-}
-
-func getTestDB() *metadata.Database {
-	db, err := metadata.NewDatabase(dbURL, getPanicLogger())
-	if err != nil {
-		panic(err)
-	}
-
-	return db
 }
 
 func TestStuff(t *testing.T) {

@@ -21,13 +21,13 @@ type S3Store struct {
 	secret string
 	bucket string
 	log    *logrus.Logger
-	db     *metadata.Database
+	md     metadata.LookupSaver
 	b      *s3.Bucket
 }
 
 // NewS3Store initializes an *S3Store.  Wow!
 func NewS3Store(key, secret, bucket, regionName string,
-	log *logrus.Logger, db *metadata.Database) (*S3Store, error) {
+	log *logrus.Logger, md metadata.LookupSaver) (*S3Store, error) {
 
 	log.Debug("getting aws auth")
 	auth, err := aws.GetAuth(key, secret)
@@ -62,7 +62,7 @@ func NewS3Store(key, secret, bucket, regionName string,
 		bucket: bucket,
 
 		log: log,
-		db:  db,
+		md:  md,
 		b:   b,
 	}, nil
 }
@@ -89,7 +89,7 @@ func (s3s *S3Store) Store(a *artifact.Artifact) error {
 	}
 
 	md := artifactToMetadata(a)
-	_, err = s3s.db.Save(md)
+	err = s3s.md.Save(md)
 	if err != nil {
 		return err
 	}

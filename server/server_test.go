@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/hamfist/artifacts-service/metadata"
 )
 
 var (
@@ -29,7 +30,7 @@ func TestServerDefaults(t *testing.T) {
 	opts := NewOptions()
 	log := getPanicLogger()
 
-	srv, err := NewServer(opts, log)
+	srv, err := NewServer(opts, log, metadata.NewNullLookupSaver())
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
@@ -37,5 +38,4 @@ func TestServerDefaults(t *testing.T) {
 	if !reflect.DeepEqual(srv.opts, opts) {
 		t.Fatalf("opts %v != %v", srv.opts, opts)
 	}
-
 }

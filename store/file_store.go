@@ -18,15 +18,15 @@ import (
 type FileStore struct {
 	Prefix string
 	log    *logrus.Logger
-	db     *metadata.Database
+	md     metadata.LookupSaver
 }
 
 // NewFileStore returns a *FileStore.  AMAZE.
-func NewFileStore(prefix string, log *logrus.Logger, db *metadata.Database) *FileStore {
+func NewFileStore(prefix string, log *logrus.Logger, md metadata.LookupSaver) *FileStore {
 	return &FileStore{
 		Prefix: prefix,
 		log:    log,
-		db:     db,
+		md:     md,
 	}
 }
 

@@ -110,10 +110,10 @@ func NewDatabase(url string, log *logrus.Logger) (*Database, error) {
 }
 
 // Save saves some metadata
-func (db *Database) Save(m *Metadata) (sql.Result, error) {
+func (db *Database) Save(m *Metadata) error {
 	statement := db.st.InsertMetadata.St
 	if statement == nil {
-		return nil, errNoStatement
+		return errNoStatement
 	}
 
 	res, err := statement.Exec(m.JobID, m.Size, m.Path, m.ContentType)
@@ -131,7 +131,7 @@ func (db *Database) Save(m *Metadata) (sql.Result, error) {
 		db.log.WithFields(logFields).Info("saving metadata")
 	}
 
-	return res, err
+	return err
 }
 
 // Lookup looks up some metadata
