@@ -44,11 +44,11 @@
 		},
 		{
 			"ImportPath": "github.com/mitchellh/goamz/aws",
-			"Rev": "b202af14e9b4eb599eac5501205036f4c291c197"
+			"Rev": "2fca953c74df827e5d5d9037501a55277cae6a20"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/goamz/s3",
-			"Rev": "b202af14e9b4eb599eac5501205036f4c291c197"
+			"Rev": "2fca953c74df827e5d5d9037501a55277cae6a20"
 		},
 		{
 			"ImportPath": "github.com/vaughan0/go-ini",

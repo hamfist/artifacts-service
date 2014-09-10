@@ -90,7 +90,7 @@ clean:
 
 .PHONY: save
 save:
-	$(GODEP) save -copy=false
+	$(GODEP) save
 
 .PHONY: fmtpolice
 fmtpolice:
