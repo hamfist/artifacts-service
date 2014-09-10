@@ -9,37 +9,44 @@ import (
 )
 
 var (
-	missingPrivateKeyError = fmt.Errorf("missing rsa private key")
+	errMissingPrivKey       = fmt.Errorf("missing rsa private key")
+	errUnencryptedTimestamp = fmt.Errorf("timestamp is not rsa encrypted")
 )
 
 type travisTimestamp struct {
-	Raw string
-	pk  *rsa.PrivateKey
+	RawTimestamp string
+	privKey      *rsa.PrivateKey
+	rsaRequired  bool
 }
 
-func newTravisTimestamp(raw string, pk *rsa.PrivateKey) *travisTimestamp {
+func newTravisTimestamp(raw string, privKey *rsa.PrivateKey, rsaRequired bool) *travisTimestamp {
 	return &travisTimestamp{
-		Raw: raw,
-		pk:  pk,
+		RawTimestamp: raw,
+		privKey:      privKey,
+
+		rsaRequired: rsaRequired,
 	}
 }
 
 func (tts *travisTimestamp) String() string {
-	return fmt.Sprintf("&auth.travisTimestamp{%q, [secrets]}", tts.Raw)
+	return fmt.Sprintf("&auth.travisTimestamp{%q, [secrets]}", tts.RawTimestamp)
 }
 
 func (tts *travisTimestamp) Value() (time.Time, error) {
-	if !strings.HasPrefix(tts.Raw, "RSA:") {
-		return time.Parse(time.RFC3339, tts.Raw)
+	if !strings.HasPrefix(tts.RawTimestamp, "RSA:") {
+		if tts.rsaRequired {
+			return theFuture, errUnencryptedTimestamp
+		}
+		return time.Parse(time.RFC3339, tts.RawTimestamp)
 	}
 
-	if tts.pk == nil {
-		return theFuture, missingPrivateKeyError
+	if tts.privKey == nil {
+		return theFuture, errMissingPrivKey
 	}
 
-	enc := strings.Replace(tts.Raw, "RSA:", "", 1)
+	enc := strings.Replace(tts.RawTimestamp, "RSA:", "", 1)
 
-	decr, err := rsa.DecryptPKCS1v15(rand.Reader, tts.pk, []byte(enc))
+	decr, err := rsa.DecryptPKCS1v15(rand.Reader, tts.privKey, []byte(enc))
 	if err != nil {
 		return theFuture, err
 	}

@@ -10,18 +10,31 @@ import (
 )
 
 var (
-	missingTokenError = fmt.Errorf("missing token")
+	errMissingToken = fmt.Errorf("missing token")
 
 	theFuture = time.Now().UTC().Add((100 * 365 * 24) * time.Hour)
 )
 
+// TravisAuther implements travis-specific authorization checks
 type TravisAuther struct {
 	TravisAPI  string
 	PrivateKey *rsa.PrivateKey
+	RequireRSA bool
 }
 
-func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *AuthResult {
-	ar := NewAuthResult(r, vars)
+// NewTravisAuther creates a new *TravisAuther wowsa
+func NewTravisAuther(travisAPI string, privateKey *rsa.PrivateKey, requireRSA bool) *TravisAuther {
+	return &TravisAuther{
+		TravisAPI:  travisAPI,
+		PrivateKey: privateKey,
+		RequireRSA: requireRSA,
+	}
+}
+
+// Check uses an authorization token to determine if reads are allowed and a
+// possibly encrypted timestamp to determine if writes are allowed
+func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *Result {
+	ar := NewResult(r, vars)
 
 	token := r.FormValue("token")
 	if token == "" {
@@ -29,7 +42,7 @@ func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *AuthResu
 	}
 
 	if token == "" {
-		ar.Errors = append(ar.Errors, missingTokenError)
+		ar.Errors = append(ar.Errors, errMissingToken)
 		return ar
 	}
 
@@ -46,7 +59,7 @@ func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *AuthResu
 		return ar
 	}
 
-	timestamp := newTravisTimestamp(r.Header.Get("Artifacts-Timestamp"), ta.PrivateKey)
+	timestamp := newTravisTimestamp(r.Header.Get("Artifacts-Timestamp"), ta.PrivateKey, ta.RequireRSA)
 
 	if ta.inValidTimeWindow(timestamp, token, jobID) {
 		ar.CanWrite = true

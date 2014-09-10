@@ -1,5 +1,10 @@
 PACKAGE := github.com/hamfist/artifacts-service
-SUBPACKAGES := $(PACKAGE)/server $(PACKAGE)/store
+SUBPACKAGES := \
+	$(PACKAGE)/artifact \
+	$(PACKAGE)/auth \
+	$(PACKAGE)/metadata \
+	$(PACKAGE)/server \
+	$(PACKAGE)/store
 
 VERSION_VAR := main.VersionString
 REPO_VERSION := $(shell git describe --always --dirty --tags)
@@ -83,4 +88,9 @@ save:
 
 .PHONY: fmtpolice
 fmtpolice:
-	set -e; for f in $(shell git ls-files '*.go'); do gofmt $$f | diff -u $$f - ; done
+	@set -e; $(foreach f,$(shell git ls-files '*.go'),gofmt $(f) | diff -u $(f) - ;)
+	@echo fmtpolice:OK
+
+.PHONY: lintall
+lintall:
+	@set -e; golint $(PACKAGE) ; $(foreach pkg,$(SUBPACKAGES),golint $(pkg) ;)

@@ -4,8 +4,8 @@ import (
 	"net/http"
 )
 
-// AuthResult is what an Auther returns mkay
-type AuthResult struct {
+// Result is what an Auther returns mkay
+type Result struct {
 	UserID   string
 	Resource string
 	CanRead  bool
@@ -13,8 +13,9 @@ type AuthResult struct {
 	Errors   []error
 }
 
-func NewAuthResult(r *http.Request, vars map[string]string) *AuthResult {
-	return &AuthResult{
+// NewResult initializes a *Result from an *http.Request and vars map
+func NewResult(r *http.Request, vars map[string]string) *Result {
+	return &Result{
 		Errors:   []error{},
 		UserID:   r.Header.Get("Artifacts-User"),
 		Resource: vars["job_id"],

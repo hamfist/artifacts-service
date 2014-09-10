@@ -1,7 +1,10 @@
 package server
 
 import (
+	"crypto/rsa"
+	"crypto/x509"
 	"os"
+	"strings"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -14,7 +17,9 @@ type Options struct {
 	AutherType      string
 	AuthToken       string
 
-	TravisAPIServer string
+	TravisAPIServer        string
+	TravisPrivateKeyString string
+	TravisRequireRSA       bool
 
 	S3Key    string
 	S3Secret string
@@ -53,7 +58,9 @@ func NewOptions() *Options {
 		AutherType:  autherType,
 		AuthToken:   os.Getenv("ARTIFACTS_TOKEN"),
 
-		TravisAPIServer: travisAPIServer,
+		TravisAPIServer:        travisAPIServer,
+		TravisPrivateKeyString: os.Getenv("TRAVIS_PRIVATE_KEY_STRING"),
+		TravisRequireRSA:       os.Getenv("TRAVIS_REQUIRE_RSA") != "",
 
 		S3Key:    os.Getenv("ARTIFACTS_KEY"),
 		S3Secret: os.Getenv("ARTIFACTS_SECRET"),
@@ -69,4 +76,24 @@ func NewOptions() *Options {
 
 func (o *Options) String() string {
 	return "&server.Options{[secrets]}"
+}
+
+// TravisPrivateKey parses and returns an *rsa.PrivateKey from the
+// TravisPrivateKeyString if present and valid
+func (o *Options) TravisPrivateKey() *rsa.PrivateKey {
+	trimmed := strings.TrimSpace(o.TravisPrivateKeyString)
+	if trimmed == "" {
+		return nil
+	}
+
+	for _, s := range []string{"\n", " ", "\t"} {
+		trimmed = strings.Replace(trimmed, s, "", -1)
+	}
+
+	privateKey, err := x509.ParsePKCS1PrivateKey([]byte(trimmed))
+	if err != nil {
+		return nil
+	}
+
+	return privateKey
 }

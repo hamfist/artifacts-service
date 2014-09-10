@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	missingS3KeyError    = fmt.Errorf("missing s3 key")
-	missingS3SecretError = fmt.Errorf("missing s3 secret")
+	errMissingS3Key    = fmt.Errorf("missing s3 key")
+	errMissingS3Secret = fmt.Errorf("missing s3 secret")
 )
 
 // Server holds onto a router and a store
@@ -135,10 +135,10 @@ func (srv *Server) setupStorer() error {
 	switch srv.opts.StorerType {
 	case "s3":
 		if srv.opts.S3Key == "" {
-			return missingS3KeyError
+			return errMissingS3Key
 		}
 		if srv.opts.S3Secret == "" {
-			return missingS3SecretError
+			return errMissingS3Secret
 		}
 		store, err := store.NewS3Store(srv.opts.S3Key,
 			srv.opts.S3Secret, srv.opts.S3Bucket, srv.opts.S3Region, srv.log, srv.md)
@@ -169,17 +169,14 @@ func (srv *Server) setupAuther() error {
 	srv.log.WithField("auther_type", srv.opts.AutherType).Debug("setting up auther")
 	switch srv.opts.AutherType {
 	case "token":
-		srv.auth = &auth.TokenAuther{
-			AuthToken: srv.opts.AuthToken,
-		}
+		srv.auth = auth.NewTokenAuther(srv.opts.AuthToken)
 		return nil
 	case "travis":
-		srv.auth = &auth.TravisAuther{
-			TravisAPI: srv.opts.TravisAPIServer,
-		}
+		srv.auth = auth.NewTravisAuther(srv.opts.TravisAPIServer,
+			srv.opts.TravisPrivateKey(), srv.opts.TravisRequireRSA)
 		return nil
 	case "null":
-		srv.auth = &auth.NullAuther{}
+		srv.auth = auth.NewNullAuther()
 		return nil
 	default:
 		srv.log.WithFields(logrus.Fields{
