@@ -64,30 +64,30 @@ func NewServer(opts *Options, log *logrus.Logger) (*Server, error) {
 	var err error
 
 	log.Debug("creating new server")
-	server := &Server{
+	srv := &Server{
 		opts: opts,
 		log:  log,
 	}
 
-	server.setupRouter()
-	server.setupNegroni()
+	srv.setupRouter()
+	srv.setupNegroni()
 
-	err = server.getDB()
+	err = srv.getDB()
 	if err != nil {
 		return nil, err
 	}
 
-	err = server.setupStorer()
+	err = srv.setupStorer()
 	if err != nil {
 		return nil, err
 	}
 
-	err = server.setupAuther()
+	err = srv.setupAuther()
 	if err != nil {
 		return nil, err
 	}
 
-	return server, nil
+	return srv, nil
 }
 
 // Run starts up the server on the given addr

@@ -25,6 +25,7 @@ _testmain.go
 
 *coverage.*
 *.coverprofile
+*.out
 
 /tmp/
 /.env*

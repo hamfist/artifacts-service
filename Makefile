@@ -17,6 +17,12 @@ GODEP ?= godep
 GOBUILD_LDFLAGS := -ldflags "-X $(VERSION_VAR) $(REPO_VERSION) -X $(REV_VAR) $(REPO_REV)"
 GOBUILD_FLAGS ?=
 
+DATABASE_URL ?= 'postgres://artifacts:dogs@localhost:5432/artifacts?sslmode=disable'
+PORT ?= 9839
+
+export DATABASE_URL
+export PORT
+
 COVERPROFILES := \
 	artifact-coverage.coverprofile \
 	auth-coverage.coverprofile \

@@ -3,6 +3,7 @@ package server
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"fmt"
 	"os"
 	"strings"
 
@@ -11,20 +12,20 @@ import (
 
 // Options contains the bits used to create a server
 type Options struct {
+	AuthToken       string
+	AutherType      string
 	DatabaseURL     string
 	FileStorePrefix string
 	StorerType      string
-	AutherType      string
-	AuthToken       string
 
 	TravisAPIServer        string
 	TravisPrivateKeyString string
 	TravisRequireRSA       bool
 
-	S3Key    string
-	S3Secret string
 	S3Bucket string
+	S3Key    string
 	S3Region string
+	S3Secret string
 
 	Debug bool
 }
@@ -53,19 +54,20 @@ func NewOptions() *Options {
 	}
 
 	opts := &Options{
-		DatabaseURL: os.Getenv("DATABASE_URL"),
-		StorerType:  storerType,
-		AutherType:  autherType,
-		AuthToken:   os.Getenv("ARTIFACTS_TOKEN"),
+		AuthToken:       os.Getenv("ARTIFACTS_TOKEN"),
+		AutherType:      autherType,
+		DatabaseURL:     os.Getenv("DATABASE_URL"),
+		FileStorePrefix: os.Getenv("ARTIFACTS_FILE_STORE_PREFIX"),
+		StorerType:      storerType,
 
 		TravisAPIServer:        travisAPIServer,
 		TravisPrivateKeyString: os.Getenv("TRAVIS_PRIVATE_KEY_STRING"),
 		TravisRequireRSA:       os.Getenv("TRAVIS_REQUIRE_RSA") != "",
 
-		S3Key:    os.Getenv("ARTIFACTS_KEY"),
-		S3Secret: os.Getenv("ARTIFACTS_SECRET"),
 		S3Bucket: os.Getenv("ARTIFACTS_BUCKET"),
+		S3Key:    os.Getenv("ARTIFACTS_KEY"),
 		S3Region: s3Region,
+		S3Secret: os.Getenv("ARTIFACTS_SECRET"),
 
 		Debug: os.Getenv("DEBUG") != "",
 	}
@@ -75,7 +77,7 @@ func NewOptions() *Options {
 }
 
 func (o *Options) String() string {
-	return "&server.Options{[secrets]}"
+	return fmt.Sprintf("&server.Options{[secrets]} %p", o)
 }
 
 // TravisPrivateKey parses and returns an *rsa.PrivateKey from the
