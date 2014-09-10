@@ -10,7 +10,7 @@ import (
 )
 
 func (srv *Server) getPathHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {
-	if !srv.canRead(r, vars) {
+	if !srv.getAuth(r, vars).CanRead {
 		return srv.serveUnauthorized(w, r)
 	}
 

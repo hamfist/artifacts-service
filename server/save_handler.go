@@ -10,7 +10,7 @@ import (
 )
 
 func (srv *Server) saveHandler(w http.ResponseWriter, r *http.Request, vars map[string]string) int {
-	if !srv.canWrite(r, vars) {
+	if !srv.getAuth(r, vars).CanWrite {
 		return srv.serveUnauthorized(w, r)
 	}
 

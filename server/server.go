@@ -11,6 +11,7 @@ import (
 	"github.com/hamfist/artifacts-service/auth"
 	"github.com/hamfist/artifacts-service/metadata"
 	"github.com/hamfist/artifacts-service/store"
+	"github.com/meatballhat/negroni-logrus"
 )
 
 var (
@@ -125,7 +126,7 @@ func (srv *Server) setupNegroni() {
 	srv.log.Debug("setting up negroni")
 	srv.n = negroni.New()
 	srv.n.Use(negroni.NewRecovery())
-	srv.n.Use(NewLoggerMiddleware())
+	srv.n.Use(negronilogrus.NewMiddleware())
 	srv.n.Use(negroni.NewStatic(http.Dir("public")))
 	srv.n.UseHandler(srv.Router)
 }
@@ -210,10 +211,6 @@ func (srv *Server) getMd(md metadata.LookupSaver) error {
 	return nil
 }
 
-func (srv *Server) canWrite(r *http.Request, vars map[string]string) bool {
-	return srv.auth.Check(r, vars).CanWrite
-}
-
-func (srv *Server) canRead(r *http.Request, vars map[string]string) bool {
-	return srv.auth.Check(r, vars).CanRead
+func (srv *Server) getAuth(r *http.Request, vars map[string]string) *auth.Result {
+	return srv.auth.Check(r, vars)
 }
