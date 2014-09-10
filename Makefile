@@ -12,6 +12,13 @@ GODEP ?= godep
 GOBUILD_LDFLAGS := -ldflags "-X $(VERSION_VAR) $(REPO_VERSION) -X $(REV_VAR) $(REPO_REV)"
 GOBUILD_FLAGS ?=
 
+COVERPROFILES := \
+	artifact-coverage.coverprofile \
+	auth-coverage.coverprofile \
+	metadata-coverage.coverprofile \
+	server-coverage.coverprofile \
+	store-coverage.coverprofile
+
 .PHONY: all
 all: clean test save
 
@@ -26,10 +33,10 @@ test-deps:
 test-race:
 	$(GO) test -race $(GOBUILD_LDFLAGS) $(PACKAGE) $(SUBPACKAGES)
 
-coverage.html: coverage.out
+coverage.html: coverage.coverprofile
 	$(GO) tool cover -html=$^ -o $@
 
-coverage.out: server-coverage.out store-coverage.out artifact-coverage.out
+coverage.coverprofile: $(COVERPROFILES)
 	$(GO) test -covermode=count -coverprofile=$@.tmp $(GOBUILD_LDFLAGS) $(PACKAGE)
 	echo 'mode: count' > $@
 	grep -h -v 'mode: count' $@.tmp >> $@
@@ -37,20 +44,20 @@ coverage.out: server-coverage.out store-coverage.out artifact-coverage.out
 	grep -h -v 'mode: count' $^ >> $@
 	$(GO) tool cover -func=$@
 
-server-coverage.out:
+artifact-coverage.coverprofile:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/artifact
+
+auth-coverage.coverprofile:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/auth
+
+metadata-coverage.coverprofile:
+	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/metadata
+
+server-coverage.coverprofile:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/server
 
-store-coverage.out:
+store-coverage.coverprofile:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/store
-
-metadata-coverage.out:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/metadata
-
-metadata-coverage.out:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/metadata
-
-artifact-coverage.out:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/artifact
 
 .PHONY: build
 build: deps
@@ -64,7 +71,7 @@ deps:
 .PHONY: clean
 clean:
 	rm -vf $${GOPATH%%:*}/bin/artifacts-service
-	rm -vf coverage.html *coverage.out
+	rm -vf coverage.html *coverage.coverprofile
 	$(GO) clean $(PACKAGE) $(SUBPACKAGES) || true
 	if [ -d $${GOPATH%%:*}/pkg ] ; then \
 		find $${GOPATH%%:*}/pkg -name '*artifacts-service*' | xargs rm -rfv || true ; \

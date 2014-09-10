@@ -11,7 +11,12 @@ var (
 
 	travisAutherTestCases = []*travisAutherTestCase{
 		&travisAutherTestCase{
-			Vars: map[string]string{},
+			Method:    "GET",
+			Timestamp: "2014-09-09T12:13:14Z",
+			AuthToken: "BOGUS",
+			CanRead:   false,
+			CanWrite:  false,
+			Vars:      map[string]string{},
 		},
 	}
 )

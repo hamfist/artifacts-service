@@ -24,7 +24,7 @@ _testmain.go
 /gin-bin
 
 *coverage.*
-*.out
+*.coverprofile
 
 /tmp/
 /.env*

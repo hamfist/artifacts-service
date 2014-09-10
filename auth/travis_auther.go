@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -14,34 +15,9 @@ var (
 	theFuture = time.Now().UTC().Add((100 * 365 * 24) * time.Hour)
 )
 
-type travisJob struct {
-	StartedAt     time.Time `json:"started_at"`
-	HasStartedAt  bool      `json:"-"`
-	HasFinishedAt bool      `json:"-"`
-}
-
-func (tj *travisJob) UnmarshalJSON(rawBytes []byte) error {
-	raw := map[string]string{}
-	err := json.Unmarshal(rawBytes, &raw)
-	if err != nil {
-		return err
-	}
-
-	var startedAt string
-	startedAt, tj.HasStartedAt = raw["started_at"]
-
-	_, tj.HasFinishedAt = raw["finished_at"]
-
-	if !tj.HasStartedAt {
-		return nil
-	}
-
-	tj.StartedAt, err = time.Parse(time.RFC3339, startedAt)
-	return err
-}
-
 type TravisAuther struct {
-	TravisAPI string
+	TravisAPI  string
+	PrivateKey *rsa.PrivateKey
 }
 
 func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *AuthResult {
@@ -70,7 +46,9 @@ func (ta *TravisAuther) Check(r *http.Request, vars map[string]string) *AuthResu
 		return ar
 	}
 
-	if ta.inValidTimeWindow(r.Header.Get("Artifacts-Timestamp"), token, jobID) {
+	timestamp := newTravisTimestamp(r.Header.Get("Artifacts-Timestamp"), ta.PrivateKey)
+
+	if ta.inValidTimeWindow(timestamp, token, jobID) {
 		ar.CanWrite = true
 	}
 
@@ -93,8 +71,8 @@ func (ta *TravisAuther) canReadBuilds(token, jobID string) bool {
 	return resp.StatusCode == http.StatusOK
 }
 
-func (ta *TravisAuther) inValidTimeWindow(reqDate, token, jobID string) bool {
-	parsedDate, err := time.Parse(time.RFC3339, reqDate)
+func (ta *TravisAuther) inValidTimeWindow(ts *travisTimestamp, token, jobID string) bool {
+	parsedDate, err := ts.Value()
 	if err != nil {
 		return false
 	}
