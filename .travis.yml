@@ -11,7 +11,7 @@ addons:
   postgresql: '9.3'
 before_install:
 - go get github.com/tools/godep
-- godep go get code.google.com/p/go.tools/cmd/cover
+- godep go install code.google.com/p/go.tools/cmd/cover
 - godep go install -a -race std
 before_script:
 - createdb -U postgres travis
