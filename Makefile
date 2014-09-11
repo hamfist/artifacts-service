@@ -12,7 +12,7 @@ REPO_VERSION := $(shell git describe --always --dirty --tags)
 REV_VAR := main.RevisionString
 REPO_REV := $(shell git rev-parse --sq HEAD)
 
-GO ?= go
+GO ?= godep go
 GODEP ?= godep
 GOBUILD_LDFLAGS := -ldflags "-X $(VERSION_VAR) $(REPO_VERSION) -X $(REV_VAR) $(REPO_REV)"
 GOBUILD_FLAGS ?=
@@ -71,13 +71,12 @@ store-coverage.coverprofile:
 	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/store
 
 .PHONY: build
-build: deps
+build:
 	$(GO) install $(GOBUILD_FLAGS) $(GOBUILD_LDFLAGS) $(PACKAGE)
 
 .PHONY: deps
 deps:
 	$(GO) get $(GOBUILD_FLAGS) $(GOBUILD_LDFLAGS) $(PACKAGE)
-	$(GODEP) restore
 
 .PHONY: clean
 clean:
