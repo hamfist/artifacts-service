@@ -18,8 +18,8 @@ before_script:
 script:
 - make
 - artifacts-service migrate
-- ./integration-test file
-- ./integration-test s3
+- ./bin/integration-test file
+- ./bin/integration-test s3
 deploy:
   provider: heroku
   buildpack: https://github.com/kr/heroku-buildpack-go.git

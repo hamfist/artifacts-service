@@ -3,6 +3,7 @@
 set -e
 
 export PATH="${GOPATH%%:*}/bin:$PATH"
+export TOP="$(dirname $(dirname $0))"
 
 if [[ ! $PORT ]] ; then
   export PORT="$(echo "${RANDOM}${RANDOM}${RANDOM}" | cut -b1-4)"
@@ -20,11 +21,11 @@ if [[ ! $DISABLE_ARTIFACTS_FETCH ]] ; then
   curl -sL https://raw.githubusercontent.com/travis-ci/artifacts/master/install | bash
 fi
 
-UPLOADED_PATH="$(dirname $0)/tmp/$TRAVIS_REPO_SLUG"
+UPLOADED_PATH="$TOP/tmp/$TRAVIS_REPO_SLUG"
 UPLOADED_PATH="$UPLOADED_PATH/jobs/$TRAVIS_JOB_ID"
 UPLOADED_PATH="$UPLOADED_PATH/testfile.out"
 
-rm -rvf "$(dirname $0)/tmp"
+rm -rvf "$TOP/tmp"
 
 if [[ ! $DISABLE_ARTIFACTS_SERVICE ]] ; then
   artifacts-service serve > server.out 2>&1 &

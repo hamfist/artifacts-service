@@ -33,7 +33,7 @@ COVERPROFILES := \
 	store-coverage.coverprofile
 
 .PHONY: all
-all: clean test save
+all: clean test lintall
 
 .PHONY: test
 test: build fmtpolice test-deps test-race coverage.html
@@ -50,11 +50,7 @@ coverage.html: coverage.coverprofile
 	$(GO) tool cover -html=$^ -o $@
 
 coverage.coverprofile: $(COVERPROFILES)
-	$(GO) test -covermode=count -coverprofile=$@.tmp $(GOBUILD_LDFLAGS) $(PACKAGE)
-	echo 'mode: count' > $@
-	grep -h -v 'mode: count' $@.tmp >> $@
-	rm -f $@.tmp
-	grep -h -v 'mode: count' $^ >> $@
+	./bin/fold-coverprofiles $^ > $@
 	$(GO) tool cover -func=$@
 
 artifact-coverage.coverprofile:
@@ -82,17 +78,7 @@ deps:
 
 .PHONY: clean
 clean:
-	$(RM) -vf $(shell godep path)/bin/artifacts-service $(GOPATH)/bin/artifacts-service
-	$(RM) -vf coverage.html *coverage.coverprofile
-	$(GO) clean $(PACKAGE) $(SUBPACKAGES) || true
-	if [ -d $(shell godep path)/pkg ] ; then \
-		$(FIND) $(shell godep path)/pkg -wholename \
-			'*hamfist/artifacts-service*' | xargs rm -rfv || true ; \
-	fi ; \
-	if [ -d $(GOPATH)/pkg ] ; then \
-		$(FIND) $(GOPATH)/pkg -wholename \
-			'*hamfist/artifacts-service*' | xargs rm -rfv || true ; \
-	fi
+	./bin/clean
 
 .PHONY: save
 save:
@@ -100,8 +86,8 @@ save:
 
 .PHONY: fmtpolice
 fmtpolice:
-	set -e; $(foreach f,$(shell git ls-files '*.go' | grep -v Godeps),gofmt $(f) | diff -u $(f) - ;)
+	./bin/fmtpolice
 
 .PHONY: lintall
 lintall:
-	set -e; golint $(PACKAGE) ; $(foreach pkg,$(SUBPACKAGES),golint $(pkg) ;)
+	./bin/lintall
