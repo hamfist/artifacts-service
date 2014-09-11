@@ -12,10 +12,12 @@ REPO_VERSION := $(shell git describe --always --dirty --tags)
 REV_VAR := main.RevisionString
 REPO_REV := $(shell git rev-parse --sq HEAD)
 
+FIND ?= find
 GO ?= godep go
 GODEP ?= godep
+GOPATH := $(shell echo $${GOPATH%%:*})
 GOBUILD_LDFLAGS := -ldflags "-X $(VERSION_VAR) $(REPO_VERSION) -X $(REV_VAR) $(REPO_REV)"
-GOBUILD_FLAGS ?=
+GOBUILD_FLAGS ?= -x
 
 DATABASE_URL ?= 'postgres://artifacts:dogs@localhost:5432/artifacts?sslmode=disable'
 PORT ?= 9839
@@ -80,11 +82,16 @@ deps:
 
 .PHONY: clean
 clean:
-	rm -vf $${GOPATH%%:*}/bin/artifacts-service
-	rm -vf coverage.html *coverage.coverprofile
+	$(RM) -vf $(shell godep path)/bin/artifacts-service $(GOPATH)/bin/artifacts-service
+	$(RM) -vf coverage.html *coverage.coverprofile
 	$(GO) clean $(PACKAGE) $(SUBPACKAGES) || true
-	if [ -d $${GOPATH%%:*}/pkg ] ; then \
-		find $${GOPATH%%:*}/pkg -name '*artifacts-service*' | xargs rm -rfv || true ; \
+	if [ -d $(shell godep path)/pkg ] ; then \
+		$(FIND) $(shell godep path)/pkg -wholename \
+			'*hamfist/artifacts-service*' | xargs rm -rfv || true ; \
+	fi ; \
+	if [ -d $(GOPATH)/pkg ] ; then \
+		$(FIND) $(GOPATH)/pkg -wholename \
+			'*hamfist/artifacts-service*' | xargs rm -rfv || true ; \
 	fi
 
 .PHONY: save
@@ -93,9 +100,8 @@ save:
 
 .PHONY: fmtpolice
 fmtpolice:
-	@set -e; $(foreach f,$(shell git ls-files '*.go'),gofmt $(f) | diff -u $(f) - ;)
-	@echo fmtpolice:OK
+	set -e; $(foreach f,$(shell git ls-files '*.go' | grep -v Godeps),gofmt $(f) | diff -u $(f) - ;)
 
 .PHONY: lintall
 lintall:
-	@set -e; golint $(PACKAGE) ; $(foreach pkg,$(SUBPACKAGES),golint $(pkg) ;)
+	set -e; golint $(PACKAGE) ; $(foreach pkg,$(SUBPACKAGES),golint $(pkg) ;)
