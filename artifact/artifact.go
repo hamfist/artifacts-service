@@ -15,11 +15,7 @@ var (
 
 // Artifact contains the bits!
 type Artifact struct {
-	Branch      string
-	BuildID     string
-	BuildNumber string
-	JobID       string
-	JobNumber   string
+	JobID string
 
 	Source       string
 	Destination  string
