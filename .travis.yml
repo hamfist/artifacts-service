@@ -11,8 +11,8 @@ addons:
   postgresql: '9.3'
 before_install:
 - go get github.com/tools/godep
-- go install github.com/golang/lint/golint
-- go install code.google.com/p/go.tools/cmd/cover
+- go get github.com/golang/lint/golint
+- go get code.google.com/p/go.tools/cmd/cover
 - go install -a -race std
 before_script:
 - createdb -U postgres travis
