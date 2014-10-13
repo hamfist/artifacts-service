@@ -4,22 +4,22 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
-			"Comment": "v0.5.1-3-gd70cdce",
-			"Rev": "d70cdce21e9aef489bfc77581685712a22d71dd8"
+			"Comment": "v0.5.1-31-g965349d",
+			"Rev": "965349de21e7b1e9e80b6ae02e093f1522516ef3"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/cli",
-			"Comment": "1.2.0-24-g7381bc4",
-			"Rev": "7381bc4e62942763475703c7edd405f1e42adf4f"
+			"Comment": "1.2.0-26-gf7ebb76",
+			"Rev": "f7ebb761e83e21225d1d8954fde853bf8edd46c4"
 		},
 		{
 			"ImportPath": "github.com/codegangsta/negroni",
-			"Comment": "v0.1-27-g46bd821",
-			"Rev": "46bd821940d86fb9777f7f86e9ae428132e110da"
+			"Comment": "v0.1-32-gc64702c",
+			"Rev": "c64702ca03d0f858ab7866638b69e85f0d4c6ee7"
 		},
 		{
 			"ImportPath": "github.com/dustin/go-humanize",
-			"Rev": "cb7b800be3f0238405be0e57d481740cfc4fb285"
+			"Rev": "cbc4167517eda1674812a41e2b73a3dcdf2428a8"
 		},
 		{
 			"ImportPath": "github.com/gorilla/context",
@@ -27,16 +27,16 @@
 		},
 		{
 			"ImportPath": "github.com/gorilla/mux",
-			"Rev": "4b8fbc56f3b2400a7c7ea3dba9b3539787c486b6"
+			"Rev": "e444e69cbd2e2e3e0749a2f3c717cec491552bbf"
 		},
 		{
 			"ImportPath": "github.com/kelseyhightower/envconfig",
-			"Comment": "v1.0.0",
-			"Rev": "0280e33525f5d88edb71638a80b31724153225ba"
+			"Comment": "v1.0.0-4-g7e6571f",
+			"Rev": "7e6571f118cf0b0ef44f3049cf842e94f9bf210e"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
-			"Rev": "b021d0ef20de4f7ed239e2cbe3b95648d8e41e95"
+			"Rev": "b7af72a1fc1649a8871af32e23229fb89ae6cdc7"
 		},
 		{
 			"ImportPath": "github.com/meatballhat/negroni-logrus",
@@ -44,11 +44,11 @@
 		},
 		{
 			"ImportPath": "github.com/mitchellh/goamz/aws",
-			"Rev": "2fca953c74df827e5d5d9037501a55277cae6a20"
+			"Rev": "120cc0545a60ef926d0c3c8786e3b5df34d7db02"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/goamz/s3",
-			"Rev": "2fca953c74df827e5d5d9037501a55277cae6a20"
+			"Rev": "120cc0545a60ef926d0c3c8786e3b5df34d7db02"
 		},
 		{
 			"ImportPath": "github.com/vaughan0/go-ini",
