@@ -6,12 +6,15 @@ import (
 	"sync"
 )
 
+// NullLookupSaver is the "nullified" implementation of a lookup
+// saver
 type NullLookupSaver struct {
 	mdMap map[string]*Metadata
 
 	l *sync.Mutex
 }
 
+// NewNullLookupSaver builds a new NullLookupSaver
 func NewNullLookupSaver() *NullLookupSaver {
 	return &NullLookupSaver{
 		mdMap: map[string]*Metadata{},
@@ -20,6 +23,7 @@ func NewNullLookupSaver() *NullLookupSaver {
 	}
 }
 
+// Save adds the metadata to the in-memory internal mapping
 func (nls *NullLookupSaver) Save(m *Metadata) error {
 	nls.l.Lock()
 	defer nls.l.Unlock()
@@ -27,6 +31,7 @@ func (nls *NullLookupSaver) Save(m *Metadata) error {
 	return nil
 }
 
+// Lookup gets the metadata from the in-memory internal mapping
 func (nls *NullLookupSaver) Lookup(jobID, path string) (*Metadata, error) {
 	nls.l.Lock()
 	defer nls.l.Unlock()
@@ -37,6 +42,7 @@ func (nls *NullLookupSaver) Lookup(jobID, path string) (*Metadata, error) {
 	return nil, errNoMetadata
 }
 
+// LookupAll returns all of the in-memory metadata
 func (nls *NullLookupSaver) LookupAll(jobID string) ([]*Metadata, error) {
 	nls.l.Lock()
 	defer nls.l.Unlock()

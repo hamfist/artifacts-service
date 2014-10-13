@@ -7,16 +7,21 @@ SUBPACKAGES := \
 	$(PACKAGE)/store
 
 VERSION_VAR := main.VersionString
-REPO_VERSION := $(shell git describe --always --dirty --tags)
-
+VERSION_VALUE := $(shell git describe --always --dirty --tags)
 REV_VAR := main.RevisionString
-REPO_REV := $(shell git rev-parse --sq HEAD)
+REV_VALUE := $(shell git rev-parse --sq HEAD)
+GENERATED_VAR := main.GeneratedString
+GENERATED_VALUE := $(shell date -u +'%Y-%m-%dT%H:%M:%S%z')
 
 FIND ?= find
-GO ?= godep go
-GODEP ?= godep
+GO ?= go
+DEPPY ?= deppy
 GOPATH := $(shell echo $${GOPATH%%:*})
-GOBUILD_LDFLAGS := -ldflags "-X $(VERSION_VAR) $(REPO_VERSION) -X $(REV_VAR) $(REPO_REV)"
+GOBUILD_LDFLAGS := -ldflags "\
+	-X $(VERSION_VAR) $(VERSION_VALUE) \
+	-X $(REV_VAR) $(REV_VALUE) \
+	-X $(GENERATED_VAR) $(GENERATED_VALUE) \
+"
 GOBUILD_FLAGS ?= -x
 
 DATABASE_URL ?= 'postgres://artifacts:dogs@localhost:5432/artifacts?sslmode=disable'
@@ -32,8 +37,12 @@ COVERPROFILES := \
 	server-coverage.coverprofile \
 	store-coverage.coverprofile
 
+%-coverage.coverprofile:
+	$(GO) test -covermode=count -coverprofile=$@ \
+		$(GOBUILD_LDFLAGS) $(PACKAGE)/$(subst -coverage.coverprofile,,$@)
+
 .PHONY: all
-all: clean test lintall
+all: clean deps test lintall
 
 .PHONY: test
 test: build fmtpolice test-deps test-race coverage.html
@@ -53,21 +62,6 @@ coverage.coverprofile: $(COVERPROFILES)
 	./bin/fold-coverprofiles $^ > $@
 	$(GO) tool cover -func=$@
 
-artifact-coverage.coverprofile:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/artifact
-
-auth-coverage.coverprofile:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/auth
-
-metadata-coverage.coverprofile:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/metadata
-
-server-coverage.coverprofile:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/server
-
-store-coverage.coverprofile:
-	$(GO) test -covermode=count -coverprofile=$@ $(GOBUILD_LDFLAGS) $(PACKAGE)/store
-
 .PHONY: build
 build:
 	$(GO) install $(GOBUILD_FLAGS) $(GOBUILD_LDFLAGS) $(PACKAGE)
@@ -82,7 +76,7 @@ clean:
 
 .PHONY: save
 save:
-	$(GODEP) save
+	$(DEPPY) save
 
 .PHONY: fmtpolice
 fmtpolice:

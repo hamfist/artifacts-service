@@ -3,17 +3,13 @@
 set -e
 
 TOP_GOPATH=${GOPATH%%:*}
-GO=${GO:-godep go}
+GO=${GO:-go}
 PACKAGE=${PACKAGE:-github.com/hamfist/artifacts-service}
 SUBPACKAGES=$(echo ${PACKAGE}/{artifact,auth,metadata,server,store})
 
-rm -vf "$(godep path)/bin/artifacts-service" "${TOP_GOPATH}/bin/artifacts-service"
+rm -vf "${TOP_GOPATH}/bin/artifacts-service"
 rm -vf coverage.html *coverage.coverprofile
 ${GO} clean ${PACKAGE} ${SUBPACKAGES} || true
-if [ -d $(godep path)/pkg ] ; then
-  find $(godep path)/pkg -wholename \
-    '*hamfist/artifacts-service*' | xargs rm -rfv || true
-fi
 if [ -d ${TOP_GOPATH}/pkg ] ; then
   find ${TOP_GOPATH}/pkg -wholename \
     '*hamfist/artifacts-service*' | xargs rm -rfv || true

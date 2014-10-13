@@ -7,8 +7,8 @@ if [[ $# -lt 1 ]] ; then
   exit 1
 fi
 
-GO=${GO:-godep go}
-OUT_TMP=$(mktemp)
+GO=${GO:-deppy go}
+OUT_TMP=$(mktemp artifacts-service.XXXXX)
 PACKAGE=${PACKAGE:-github.com/hamfist/artifacts-service}
 
 ${GO} test \
