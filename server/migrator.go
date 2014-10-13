@@ -5,6 +5,7 @@ import (
 	"github.com/hamfist/artifacts-service/metadata"
 )
 
+// MigratorMain is the entry point for the "migrate" cli command
 func MigratorMain(log *logrus.Logger) {
 	opts := NewOptions()
 	if opts.Debug {
