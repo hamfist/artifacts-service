@@ -42,7 +42,7 @@ COVERPROFILES := \
 		$(GOBUILD_LDFLAGS) $(PACKAGE)/$(subst -coverage.coverprofile,,$@)
 
 .PHONY: all
-all: clean test deps lintall
+all: clean deps test lintall
 
 .PHONY: test
 test: build fmtpolice test-deps test-race coverage.html
