@@ -1,6 +1,6 @@
 {
 	"ImportPath": "github.com/hamfist/artifacts-service",
-	"GoVersion": "go1.3.1",
+	"GoVersion": "go1.3.3",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",

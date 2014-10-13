@@ -13,8 +13,8 @@ REV_VAR := main.RevisionString
 REPO_REV := $(shell git rev-parse --sq HEAD)
 
 FIND ?= find
-GO ?= godep go
-GODEP ?= godep
+GO ?= go
+DEPPY ?= deppy
 GOPATH := $(shell echo $${GOPATH%%:*})
 GOBUILD_LDFLAGS := -ldflags "-X $(VERSION_VAR) $(REPO_VERSION) -X $(REV_VAR) $(REPO_REV)"
 GOBUILD_FLAGS ?= -x
@@ -33,7 +33,7 @@ COVERPROFILES := \
 	store-coverage.coverprofile
 
 .PHONY: all
-all: clean test lintall
+all: clean test deps lintall
 
 .PHONY: test
 test: build fmtpolice test-deps test-race coverage.html
@@ -82,7 +82,7 @@ clean:
 
 .PHONY: save
 save:
-	$(GODEP) save
+	$(DEPPY) save
 
 .PHONY: fmtpolice
 fmtpolice:
